@@ -6,6 +6,14 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Plus } from "lucide-react"
 
 type CreateTaskSuccessResponse = {
   success: true
@@ -18,6 +26,7 @@ type CreateTaskErrorResponse = {
 
 export function TaskCreateForm() {
   const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [estimatedHours, setEstimatedHours] = useState(1)
@@ -69,6 +78,7 @@ export function TaskCreateForm() {
       setEndAt("")
       setMessage("タスクを追加しました。")
       router.refresh()
+      setIsOpen(false)
     } catch (error) {
       setIsError(true)
       setMessage(error instanceof Error ? error.message : "タスクの追加に失敗しました。")
@@ -78,12 +88,23 @@ export function TaskCreateForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
-      <div className="space-y-2">
-        <Label htmlFor="task-title" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">タスク名</Label>
-        <Input
-          id="task-title"
-          value={title}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="h-12 rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary w-full sm:w-auto flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          新しいタスクを追加
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg rounded-3xl border-border bg-card p-6 shadow-lg sm:p-8">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-xl">新しいタスクを追加</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="task-title" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">タスク名</Label>
+            <Input
+              id="task-title"
+              value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="例: 実験ノート整理"
           maxLength={120}
@@ -145,18 +166,20 @@ export function TaskCreateForm() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4 pt-2">
-        <Button 
-          type="submit" 
-          disabled={isSubmitting} 
-          className="h-12 w-full rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary sm:w-auto"
-        >
-          {isSubmitting ? "追加中..." : "タスクを追加"}
-        </Button>
-        {message ? (
-          <p className={`text-sm font-medium ${isError ? "text-destructive" : "text-primary"}`}>{message}</p>
-        ) : null}
-      </div>
-    </form>
+        <div className="flex items-center justify-between gap-4 pt-4 mt-2">
+          <Button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className="h-12 w-full rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary sm:w-auto"
+          >
+            {isSubmitting ? "追加中..." : "タスクを追加"}
+          </Button>
+          {message && (
+            <p className={`text-sm font-medium ${isError ? "text-destructive" : "text-primary"}`}>{message}</p>
+          )}
+        </div>
+      </form>
+    </DialogContent>
+  </Dialog>
   )
 }

@@ -107,12 +107,9 @@ export function TaskCard({ task }: TaskCardProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <li
-            className={`group relative overflow-hidden rounded-2xl border border-border p-5 transition-all hover:shadow-md cursor-pointer ${task.status === "DONE" ? "bg-secondary" : "bg-card"}`}
-          />
-        }
+      <li
+        onClick={() => setIsOpen(true)}
+        className={`group relative overflow-hidden rounded-2xl border border-border p-5 transition-all hover:shadow-md cursor-pointer ${task.status === "DONE" ? "bg-secondary" : "bg-card"}`}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-1 w-full">
@@ -149,7 +146,7 @@ export function TaskCard({ task }: TaskCardProps) {
             <TaskStatusToggle taskId={task.id} status={task.status} />
           </div>
         </div>
-      </DialogTrigger>
+      </li>
 
       <DialogContent className="sm:max-w-lg rounded-3xl border-border bg-card p-6 shadow-lg sm:p-8">
         <DialogHeader className="mb-2">
