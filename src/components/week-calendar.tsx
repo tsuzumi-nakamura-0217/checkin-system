@@ -300,11 +300,11 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
   }, [activeSelection, weekStart, startHour])
 
   const finalizeTaskSelection = useCallback(async () => {
-    if (!taskDragContext || !taskDragCurrent) { setTaskDragContext(null); setTaskDragCurrent(null); setDidTaskDragMove(false); window.setTimeout(() => { suppressPostDragClickRef.current = false }, 0); return }
+    if (!taskDragContext || !taskDragCurrent) { setTaskDragContext(null); setTaskDragCurrent(null); setDidTaskDragMove(false); suppressPostDragClickRef.current = false; return }
     const { taskId, durationSlots } = taskDragContext
     const { dayIndex, slotIndex } = taskDragCurrent
     setTaskDragContext(null); setTaskDragCurrent(null)
-    if (taskDragContext.initialDayIndex === dayIndex && taskDragContext.initialSlotIndex === slotIndex) { setDidTaskDragMove(false); window.setTimeout(() => { suppressPostDragClickRef.current = false }, 0); return }
+    if (taskDragContext.initialDayIndex === dayIndex && taskDragContext.initialSlotIndex === slotIndex) { setDidTaskDragMove(false); suppressPostDragClickRef.current = false; return }
     const newStart = buildDateFromSlot(weekStart, dayIndex, slotIndex, startHour)
     const newEnd = new Date(newStart.getTime() + durationSlots * SLOT_MINUTES * 60 * 1000)
     try { await updateTaskRange(taskId, newStart, newEnd); router.refresh() } catch { alert("エラーが発生しました。") }
@@ -611,17 +611,17 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                           setTaskDragContext({ taskId: task.id, durationSlots, initialDayIndex: day.index, initialSlotIndex })
                           setTaskDragCurrent({ dayIndex: day.index, slotIndex: initialSlotIndex })
                         }}
-                        className={`pointer-events-auto absolute left-1 right-1 z-40 cursor-pointer overflow-hidden rounded-lg border-l-[3px] border shadow-sm transition-all hover:shadow-themed hover:-translate-y-px ${isDone ? "border-l-accent border-border/60 bg-accent/5" : "border-l-primary border-border bg-card"} ${isGhost ? "opacity-30 scale-95" : ""}`}
+                        className={`pointer-events-auto absolute left-1.5 right-1.5 z-40 cursor-pointer overflow-hidden rounded-[10px] border-l-[3px] shadow-sm transition-all duration-200 hover:shadow-themed hover:-translate-y-0.5 hover:brightness-[1.02] ${isDone ? "border-l-[var(--task-done-bar)] border border-accent/20 bg-gradient-to-r from-accent/[0.06] to-accent/[0.02]" : "border-l-[var(--task-todo-bar)] border border-primary/15 bg-gradient-to-r from-primary/[0.06] to-card"} ${isGhost ? "opacity-25 scale-95" : ""}`}
                         style={{ top, height }}
                       >
                         <button type="button" data-resize-handle="true" aria-label="開始時刻を調整" className="absolute inset-x-1 -top-1 z-20 h-2.5 cursor-ns-resize rounded-full bg-transparent" onClick={(e) => { e.preventDefault(); e.stopPropagation() }} onMouseDown={(event) => { if (event.button !== 0) return; event.preventDefault(); event.stopPropagation(); suppressNextTaskClickRef.current = true; suppressPostDragClickRef.current = true; const ss = clamp(Math.floor(startMinute / SLOT_MINUTES), 0, slotCount - 1); const es = clamp(Math.ceil(endMinute / SLOT_MINUTES), ss + 1, slotCount); setTaskResizeContext({ taskId: task.id, edge: "start", dayIndex: day.index, initialStartSlot: ss, initialEndSlot: es }); setTaskResizeCurrent({ dayIndex: day.index, slotIndex: ss }) }} />
-                        <div className="flex items-start gap-1 px-2 py-1">
-                          <button type="button" data-status-toggle="true" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleTaskStatus(task.id, task.status) }} className={`mt-0.5 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded border transition-all ${isDone ? "border-accent bg-accent text-white" : "border-muted-foreground/30 bg-background hover:border-primary"}`}>
+                        <div className="flex items-start gap-1.5 px-2 py-1.5">
+                          <button type="button" data-status-toggle="true" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleTaskStatus(task.id, task.status) }} className={`mt-px flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-[4px] border-[1.5px] transition-all duration-200 ${isDone ? "border-accent bg-accent text-white shadow-sm" : "border-muted-foreground/25 bg-white hover:border-primary hover:bg-primary/5"}`}>
                             {isDone && <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                           </button>
                           <div className="min-w-0 flex-1">
-                            <p className={`truncate text-[11px] font-bold leading-tight ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
-                            <p className="truncate text-[10px] font-medium text-muted-foreground/70 tabular-nums">{toDurationLabel(task.startDate, task.endDate)}</p>
+                            <p className={`truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
+                            {height >= 36 && <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground/50 tabular-nums">{toDurationLabel(task.startDate, task.endDate)}</p>}
                           </div>
                         </div>
                         <button type="button" data-resize-handle="true" aria-label="終了時刻を調整" className="absolute inset-x-1 -bottom-1 z-20 h-2.5 cursor-ns-resize rounded-full bg-transparent" onClick={(e) => { e.preventDefault(); e.stopPropagation() }} onMouseDown={(event) => { if (event.button !== 0) return; event.preventDefault(); event.stopPropagation(); suppressNextTaskClickRef.current = true; suppressPostDragClickRef.current = true; const ss = clamp(Math.floor(startMinute / SLOT_MINUTES), 0, slotCount - 1); const es = clamp(Math.ceil(endMinute / SLOT_MINUTES), ss + 1, slotCount); setTaskResizeContext({ taskId: task.id, edge: "end", dayIndex: day.index, initialStartSlot: ss, initialEndSlot: es }); setTaskResizeCurrent({ dayIndex: day.index, slotIndex: es }) }} />
