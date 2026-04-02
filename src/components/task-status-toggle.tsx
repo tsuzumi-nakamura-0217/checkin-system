@@ -3,8 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { Button } from "@/components/ui/button"
-
 type TaskStatus = "TODO" | "DONE" | string
 
 type TaskStatusToggleProps = {
@@ -60,15 +58,28 @@ export function TaskStatusToggle({ taskId, status }: TaskStatusToggleProps) {
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant={isDone ? "secondary" : "outline"}
-      size="sm"
       disabled={isSubmitting}
       onClick={handleToggle}
-      className="rounded-full"
+      className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-50 ${
+        isDone
+          ? "border-accent/30 bg-accent/8 text-accent hover:bg-accent/15"
+          : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+      }`}
     >
-      {isSubmitting ? "更新中..." : isDone ? "ステータス: 完了" : "ステータス: 未完了"}
-    </Button>
+      <span className={`flex h-4 w-4 items-center justify-center rounded border transition-all ${
+        isDone
+          ? "border-accent bg-accent text-white"
+          : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
+      }`}>
+        {isDone && (
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+      </span>
+      {isSubmitting ? "更新中..." : isDone ? "完了" : "未完了"}
+    </button>
   )
 }

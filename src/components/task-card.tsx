@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 
 type Task = {
@@ -104,103 +103,102 @@ export function TaskCard({ task }: TaskCardProps) {
   }
 
   const isLoading = isSubmitting || isPending
+  const isDone = task.status === "DONE"
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <li
         onClick={() => setIsOpen(true)}
-        className={`group relative overflow-hidden rounded-2xl border border-border p-5 transition-all hover:shadow-md cursor-pointer ${task.status === "DONE" ? "bg-secondary" : "bg-card"}`}
+        className={`group relative overflow-hidden rounded-xl border-l-[3px] border border-border p-4 transition-all hover:shadow-themed hover:-translate-y-px cursor-pointer ${isDone ? "border-l-accent bg-accent/5" : "border-l-primary bg-card"}`}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-1 w-full">
             <div className="flex flex-wrap items-center gap-2">
               <p
-                className={`text-base font-semibold tracking-tight ${task.status === "DONE" ? "text-muted-foreground line-through" : "text-foreground"}`}
+                className={`text-sm font-bold tracking-tight ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}
               >
                 {task.title}
               </p>
-              <span className="rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
                 {getTaskTypeLabel(task.type)}
               </span>
-              <span className="rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold tabular-nums text-muted-foreground">
                 {task.estimatedHours}h
               </span>
             </div>
 
-            {task.description ? <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p> : null}
+            {task.description ? <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p> : null}
 
             {task.startAt && task.endAt ? (
-              <p className="text-xs text-muted-foreground">{`予定: ${formatTaskRange(task.startAt, task.endAt)}`}</p>
+              <p className="text-[11px] text-muted-foreground tabular-nums">{`予定: ${formatTaskRange(task.startAt, task.endAt)}`}</p>
             ) : (
-              <p className="text-xs text-muted-foreground">予定未設定</p>
+              <p className="text-[11px] text-muted-foreground/50">予定未設定</p>
             )}
 
-            {task.status === "DONE" ? (
-              <p className="text-xs font-medium text-primary pt-1">
+            {isDone ? (
+              <p className="text-[11px] font-bold text-accent pt-0.5">
                 {`完了ポイント: ${formatPoint(task.pointsEarned ?? task.estimatedHours * 10)}pt`}
               </p>
             ) : null}
           </div>
 
-          <div onClick={(e) => e.stopPropagation()} className="sm:ml-auto">
+          <div onClick={(e) => e.stopPropagation()} className="sm:ml-auto flex-shrink-0">
             <TaskStatusToggle taskId={task.id} status={task.status} />
           </div>
         </div>
       </li>
 
-      <DialogContent className="sm:max-w-lg rounded-3xl border-border bg-card p-6 shadow-lg sm:p-8">
+      <DialogContent className="sm:max-w-lg rounded-2xl border-border bg-card p-6 shadow-themed-lg sm:p-8">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-xl">タスクを編集</DialogTitle>
+          <DialogTitle className="text-lg font-bold">タスクを編集</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleUpdate} className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">タスク名</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスク名</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
+              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               maxLength={120}
               required
             />
           </div>
           
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">詳細</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細</Label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="min-h-[100px] w-full rounded-xl border border-border bg-background px-4 py-3 text-base shadow-none outline-none transition-all placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-ring"
+              className="min-h-[100px] w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               maxLength={300}
             />
           </div>
           
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">見積時間 (H)</Label>
-              <Input
-                type="number"
-                value={estimatedHours}
-                onChange={(e) => {
-                  const next = Number(e.target.value)
-                  setEstimatedHours(Number.isFinite(next) ? Math.max(1, Math.min(24, next)) : 1)
-                }}
-                min={1}
-                max={24}
-                className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間 (H)</Label>
+            <Input
+              type="number"
+              value={estimatedHours}
+              onChange={(e) => {
+                const next = Number(e.target.value)
+                setEstimatedHours(Number.isFinite(next) ? Math.max(1, Math.min(24, next)) : 1)
+              }}
+              min={1}
+              max={24}
+              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+            />
           </div>
           
-          <div className="flex items-center justify-between gap-4 pt-4 mt-2">
+          <div className="flex items-center justify-between gap-4 pt-3">
             <Button
               type="button"
               variant="outline"
               onClick={handleDelete}
               disabled={isLoading}
-              className="h-11 rounded-full text-destructive border-border hover:bg-destructive hover:text-white"
+              className="h-10 rounded-xl text-destructive border-destructive/20 bg-destructive/5 hover:bg-destructive/10 hover:text-destructive"
             >
-              <Trash2 className="size-4 mr-2" />
+              <Trash2 className="size-4 mr-1.5" />
               削除
             </Button>
             
@@ -210,14 +208,14 @@ export function TaskCard({ task }: TaskCardProps) {
                 variant="ghost" 
                 onClick={() => setIsOpen(false)} 
                 disabled={isLoading}
-                className="h-11 rounded-full px-6 font-medium text-muted-foreground"
+                className="h-10 rounded-xl px-5 font-semibold text-muted-foreground"
               >
                 キャンセル
               </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="h-11 rounded-full bg-primary px-8 font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
+                className="h-10 rounded-xl gradient-primary px-6 font-bold text-white shadow-sm transition-all hover:shadow-themed"
               >
                 {isLoading ? "保存中..." : "保存"}
               </Button>
@@ -228,4 +226,3 @@ export function TaskCard({ task }: TaskCardProps) {
     </Dialog>
   )
 }
-

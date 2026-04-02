@@ -91,97 +91,93 @@ export function TaskCreateForm() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         render={
-          <Button className="h-12 w-full sm:w-auto rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary flex items-center justify-center gap-2">
+          <Button className="h-11 w-full sm:w-auto rounded-xl gradient-primary px-6 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2">
             <Plus className="h-4 w-4" />
             新しいタスクを追加
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-lg rounded-3xl border-border bg-card p-6 shadow-lg sm:p-8">
+      <DialogContent className="sm:max-w-lg rounded-2xl border-border bg-card p-6 shadow-themed-lg sm:p-8">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-xl">新しいタスクを追加</DialogTitle>
+          <DialogTitle className="text-lg font-bold">新しいタスクを追加</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="task-title" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">タスク名</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="task-title" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスク名</Label>
             <Input
               id="task-title"
               value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="例: 実験ノート整理"
-          maxLength={120}
-          required
-          className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
-        />
-      </div>
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="例: 実験ノート整理"
+              maxLength={120}
+              required
+              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="task-description" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">詳細（任意）</Label>
-        <textarea
-          id="task-description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          className="min-h-25 w-full rounded-xl border border-border bg-background px-4 py-3 text-base shadow-none outline-none transition-all placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-ring"
-          placeholder="メモがあれば入力"
-          maxLength={300}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="task-description" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細（任意）</Label>
+            <textarea
+              id="task-description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              className="min-h-20 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+              placeholder="メモがあれば入力"
+              maxLength={300}
+            />
+          </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="task-hours" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">見積時間（h）</Label>
-          <Input
-            id="task-hours"
-            type="number"
-            min={1}
-            max={24}
-            value={estimatedHours}
-            onChange={(event) => setEstimatedHours(Math.max(1, Math.min(24, Number(event.target.value) || 1)))}
-            className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="task-hours" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間（h）</Label>
+            <Input
+              id="task-hours"
+              type="number"
+              min={1}
+              max={24}
+              value={estimatedHours}
+              onChange={(event) => setEstimatedHours(Math.max(1, Math.min(24, Number(event.target.value) || 1)))}
+              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
 
-        {/* Padding for layout matching if needed, or left empty */}
-      </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="task-start-at" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">開始日時</Label>
+              <Input
+                id="task-start-at"
+                type="datetime-local"
+                value={startAt}
+                onChange={(event) => setStartAt(event.target.value)}
+                className="h-11 rounded-xl border-border bg-background px-3 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="task-start-at" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">開始日時</Label>
-          <Input
-            id="task-start-at"
-            type="datetime-local"
-            value={startAt}
-            onChange={(event) => setStartAt(event.target.value)}
-            className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
-          />
-        </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="task-end-at" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">終了日時</Label>
+              <Input
+                id="task-end-at"
+                type="datetime-local"
+                value={endAt}
+                onChange={(event) => setEndAt(event.target.value)}
+                className="h-11 rounded-xl border-border bg-background px-3 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="task-end-at" className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">終了日時</Label>
-          <Input
-            id="task-end-at"
-            type="datetime-local"
-            value={endAt}
-            onChange={(event) => setEndAt(event.target.value)}
-            className="h-12 rounded-xl border-border bg-background px-4 text-base shadow-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
-
-        <div className="flex items-center justify-between gap-4 pt-4 mt-2">
-          <Button 
-            type="submit" 
-            disabled={isSubmitting} 
-            className="h-12 w-full rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary sm:w-auto"
-          >
-            {isSubmitting ? "追加中..." : "タスクを追加"}
-          </Button>
-          {message && (
-            <p className={`text-sm font-medium ${isError ? "text-destructive" : "text-primary"}`}>{message}</p>
-          )}
-        </div>
-      </form>
-    </DialogContent>
-  </Dialog>
+          <div className="flex items-center justify-between gap-4 pt-3">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className="h-11 w-full rounded-xl gradient-primary px-8 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed sm:w-auto"
+            >
+              {isSubmitting ? "追加中..." : "タスクを追加"}
+            </Button>
+            {message && (
+              <p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>
+            )}
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

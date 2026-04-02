@@ -66,9 +66,9 @@ export function CheckOutButton({
       const copied = await copySummaryToClipboard(data.taskSummaryText)
 
       if (copied) {
-        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。本日のタスク概要をコピーしました。`)
+        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。タスク概要をコピーしました。`)
       } else {
-        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。タスク概要のコピーに失敗しました。`)
+        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。`)
       }
 
       router.refresh()
@@ -86,18 +86,29 @@ export function CheckOutButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className="w-full rounded-2xl border border-border bg-card px-8 py-3.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary disabled:cursor-not-allowed disabled:bg-secondary disabled:text-muted-foreground disabled:shadow-none disabled:hover:translate-y-0"
+        className={`w-full rounded-xl border px-8 py-3.5 text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 ${
+          alreadyCheckedOut
+            ? "border-accent/20 bg-accent/8 text-accent"
+            : "border-border bg-card text-foreground shadow-sm hover:shadow-themed hover:border-primary/20 active:scale-[0.99]"
+        }`}
       >
         {!hasTodayCheckIn
           ? "先にチェックインしてください"
           : alreadyCheckedOut
-            ? "本日の退勤記録済み"
+            ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                本日の退勤記録済み
+              </span>
+            )
             : isSubmitting
               ? "退勤を記録中..."
               : "退勤を記録する"}
       </button>
       {message ? (
-        <p className={`text-xs ${isError ? "text-destructive" : "text-primary"}`}>{message}</p>
+        <p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>
       ) : null}
     </div>
   )

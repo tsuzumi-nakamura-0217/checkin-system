@@ -37,7 +37,6 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null)
 
-  // 翌日の日付を取得（JST）
   const tomorrow = addDays(new Date(), 1)
   const minDate = toJSTString(tomorrow)
 
@@ -116,14 +115,14 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="w-full rounded-2xl border border-border bg-card px-8 py-3.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary active:scale-[0.99]"
+          className="w-full rounded-xl border border-border bg-card px-8 py-3.5 text-sm font-bold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-themed hover:border-primary/20 active:scale-[0.99]"
         >
           事前申告（遅刻・欠席）
         </button>
 
         {requests.length > 0 && (
-          <div className="w-full space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground">今後の事前申告</h4>
+          <div className="w-full space-y-2.5">
+            <h4 className="text-xs font-bold tracking-wide text-muted-foreground/70 uppercase">今後の事前申告</h4>
             {requests.map((req) => {
               const dateStr = new Date(req.date).toLocaleDateString("ja-JP", {
                 month: "short",
@@ -134,20 +133,20 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
               return (
                 <div
                   key={req.id}
-                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3 shadow-sm"
+                  className="flex items-center justify-between rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:shadow-themed"
                 >
                   <div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${
                           req.type === "ABSENT"
-                              ? "bg-destructive text-white"
-                              : "bg-primary text-primary-foreground"
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-primary/10 text-primary"
                         }`}
                       >
                         {req.type === "ABSENT" ? "欠席" : "遅刻"}
                       </span>
-                      <span className="text-sm font-medium text-foreground">{dateStr}</span>
+                      <span className="text-sm font-semibold text-foreground">{dateStr}</span>
                       {req.type === "LATE" && req.newTargetTime && (
                         <span className="text-xs font-medium text-muted-foreground">
                           {req.newTargetTime} 予定
@@ -160,22 +159,11 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                     <button
                       type="button"
                       onClick={() => handleDelete(req.id)}
-                      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
+                      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                       aria-label="取り消し"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   )}
@@ -187,33 +175,33 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <button
             type="button"
-            className="absolute inset-0 bg-secondary transition-opacity"
+            className="absolute inset-0 bg-foreground/20 backdrop-blur-sm transition-opacity"
             onClick={closeModal}
             aria-label="モーダルを閉じる"
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-lg sm:p-8">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">事前申告</h3>
-              <p className="mt-1 text-sm font-medium text-muted-foreground">
+              <h3 className="text-lg font-bold tracking-tight text-foreground">事前申告</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
                 遅刻または欠席の申告は前日の23:59までに行ってください。
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
                   申告タイプ
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setType("LATE")}
-                    className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
+                    className={`rounded-xl border py-2.5 text-sm font-bold transition-all ${
                       type === "LATE"
-                        ? "border-border bg-primary text-primary-foreground"
+                        ? "border-primary/30 bg-primary/10 text-primary shadow-sm"
                         : "border-border bg-background text-muted-foreground hover:bg-secondary"
                     }`}
                   >
@@ -222,9 +210,9 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                   <button
                     type="button"
                     onClick={() => setType("ABSENT")}
-                    className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
+                    className={`rounded-xl border py-2.5 text-sm font-bold transition-all ${
                       type === "ABSENT"
-                        ? "border-border bg-destructive text-white"
+                        ? "border-destructive/30 bg-destructive/10 text-destructive shadow-sm"
                         : "border-border bg-background text-muted-foreground hover:bg-secondary"
                     }`}
                   >
@@ -233,12 +221,9 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                 </div>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label
-                    htmlFor="notice-date"
-                    className="text-xs font-semibold tracking-wide text-gray-500 uppercase"
-                  >
+                  <label htmlFor="notice-date" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
                     対象日
                   </label>
                   <input
@@ -248,16 +233,13 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="h-12 w-full rounded-xl border border-border bg-background px-4 text-base shadow-none outline-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
+                    className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
                 {type === "LATE" && (
                   <div className="space-y-2">
-                    <label
-                      htmlFor="notice-time"
-                      className="text-xs font-semibold tracking-wide text-gray-500 uppercase"
-                    >
+                    <label htmlFor="notice-time" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
                       予定到着時刻
                     </label>
                     <input
@@ -266,17 +248,14 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                       value={newTargetTime}
                       onChange={(e) => setNewTargetTime(e.target.value)}
                       required
-                      className="h-12 w-full rounded-xl border border-border bg-background px-4 text-base shadow-none outline-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
+                      className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label
-                  htmlFor="notice-reason"
-                  className="text-xs font-semibold tracking-wide text-gray-500 uppercase"
-                >
+                <label htmlFor="notice-reason" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
                   理由
                 </label>
                 <textarea
@@ -286,32 +265,28 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                   placeholder="理由を入力してください..."
                   required
                   rows={3}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base shadow-none outline-none transition-all focus:bg-background focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               {message && (
-                <p
-                  className={`text-sm font-medium ${
-                    message.type === "error" ? "text-destructive" : "text-primary"
-                  }`}
-                >
+                <p className={`text-sm font-medium ${message.type === "error" ? "text-destructive" : "text-accent"}`}>
                   {message.text}
                 </p>
               )}
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
+                  className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary"
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-50"
+                  className="rounded-xl gradient-primary px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed disabled:opacity-50"
                 >
                   {isSubmitting ? "送信中..." : "申告する"}
                 </button>

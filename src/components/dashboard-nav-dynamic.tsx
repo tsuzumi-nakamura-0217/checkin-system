@@ -5,6 +5,7 @@ import dynamic from "next/dynamic"
 type NavLink = {
   href: string
   label: string
+  icon: string
 }
 
 type DashboardNavDynamicProps = {
