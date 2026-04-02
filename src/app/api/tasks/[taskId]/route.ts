@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
@@ -63,8 +64,9 @@ export async function PATCH(
       select: { points: true },
     })
 
-    return NextResponse.json({
-      success: true,
+    revalidatePath("/dashboard", "layout")
+  return NextResponse.json({
+    success: true,
       task: {
         id: task.id,
         status: task.status,
@@ -104,8 +106,9 @@ export async function PATCH(
       }),
     ])
 
-    return NextResponse.json({
-      success: true,
+    revalidatePath("/dashboard", "layout")
+  return NextResponse.json({
+    success: true,
       task: updatedTask,
       totalPoints: updatedUser.points,
     })
@@ -141,6 +144,7 @@ export async function PATCH(
     }),
   ])
 
+  revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
     task: updatedTask,
@@ -270,6 +274,7 @@ export async function PUT(
     },
   })
 
+  revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
     task: updatedTask,

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import {
   formatPoint,
   getCheckInStatusLabel,
-  getDashboardData,
+  getHistoryData,
 } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { formatTimeLabel } from "@/lib/calendar-utils"
@@ -15,7 +15,7 @@ export default async function DashboardHistoryPage() {
     redirect("/login")
   }
 
-  const data = await getDashboardData(currentUser.id)
+  const data = await getHistoryData(currentUser.id)
 
   if (!data) {
     redirect("/login")

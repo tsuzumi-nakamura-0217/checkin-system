@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { AdvanceNoticeButton } from "@/components/advance-notice-button"
 import { CheckInButton } from "@/components/check-in-button"
 import { CheckOutButton } from "@/components/check-out-button"
-import { formatPoint, getCheckInStatusLabel, getDashboardData } from "@/lib/dashboard-data"
+import { formatPoint, getCheckInStatusLabel, getOverviewData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 
 export default async function DashboardOverviewPage() {
@@ -13,13 +13,13 @@ export default async function DashboardOverviewPage() {
     redirect("/login")
   }
 
-  const data = await getDashboardData(currentUser.id)
+  const data = await getOverviewData(currentUser.id)
 
   if (!data) {
     redirect("/login")
   }
 
-  const weeklyCheckInCount = data.weeklyCheckIns.length
+  const weeklyCheckInCount = data.weeklyCheckInCount
   const weeklyTotalPoints = data.weeklyCheckInPoints + data.weeklyTaskPoints
   const todayStatusLabel = data.todayCheckIn
     ? getCheckInStatusLabel(data.todayCheckIn.status)

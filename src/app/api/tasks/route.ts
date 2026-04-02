@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
     },
   })
 
+  revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
     task,

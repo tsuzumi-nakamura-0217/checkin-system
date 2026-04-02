@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 
 import { TodayTaskReportButton } from "@/components/today-task-report-button"
 import { WeekCalendar } from "@/components/week-calendar"
-import { getDashboardData } from "@/lib/dashboard-data"
+import { getCalendarData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { toDayKey } from "@/lib/calendar-utils"
 
@@ -19,7 +19,7 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
   }
 
   const resolvedSearchParams = await searchParams
-  const data = await getDashboardData(currentUser.id, resolvedSearchParams.week)
+  const data = await getCalendarData(currentUser.id, resolvedSearchParams.week)
 
   if (!data) {
     redirect("/login")
