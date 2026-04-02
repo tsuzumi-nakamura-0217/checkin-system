@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/absent-penalty",
+      "schedule": "59 14 * * *"
+    }
+  ]
+}
