@@ -1,0 +1,127 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  points        Int       @default(0)
+  role          String    @default("USER")
+
+  targetTimeMon String? @default("09:00")
+  targetTimeTue String? @default("09:00")
+  targetTimeWed String? @default("09:00")
+  targetTimeThu String? @default("09:00")
+  targetTimeFri String? @default("09:00")
+  targetTimeSat String? @default("09:00")
+  targetTimeSun String? @default("09:00")
+
+  checkInMon    Boolean @default(true)
+  checkInTue    Boolean @default(true)
+  checkInWed    Boolean @default(true)
+  checkInThu    Boolean @default(true)
+  checkInFri    Boolean @default(true)
+  checkInSat    Boolean @default(false)
+  checkInSun    Boolean @default(false)
+
+  accounts   Account[]
+  sessions   Session[]
+  checkIns   CheckIn[]
+  tasks      Task[]
+  exceptions ExceptionRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CheckIn {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  time         DateTime @default(now())
+  checkOutTime DateTime?
+  pointsEarned Int      @default(0)
+  targetTime   String
+  status       String
+
+  latitude  Float?
+  longitude Float?
+
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  estimatedHours Int      @default(1)
+  status         String   @default("TODO")
+  type           String   @default("DAILY")
+  startAt        DateTime?
+  endAt          DateTime?
+
+  completedAt  DateTime?
+  pointsEarned Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExceptionRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String   // "LATE" or "ABSENT"
+  date          DateTime
+  newTargetTime String?
+  reason        String
+  status        String   @default("APPROVED")
+
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,21 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+# Next.js files
+.next/
+out/
+build/
+.swc/
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+*.pem
