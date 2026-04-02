@@ -12,10 +12,17 @@ export async function POST() {
   }
 
   const now = new Date()
-  const dayStart = new Date(now)
-  dayStart.setHours(0, 0, 0, 0)
-  const nextDayStart = new Date(dayStart)
-  nextDayStart.setDate(nextDayStart.getDate() + 1)
+  
+  // Calculate boundaries for the current JST day
+  const jstOffset = 9 * 60 * 60 * 1000
+  const nowJST = new Date(now.getTime() + jstOffset)
+  const jstYear = nowJST.getUTCFullYear()
+  const jstMonth = nowJST.getUTCMonth()
+  const jstDate = nowJST.getUTCDate()
+
+  // 00:00 JST today is 15:00 UTC yesterday
+  const dayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate, -9, 0, 0, 0))
+  const nextDayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate + 1, -9, 0, 0, 0))
 
   const todayCheckIn = await prisma.checkIn.findFirst({
     where: {

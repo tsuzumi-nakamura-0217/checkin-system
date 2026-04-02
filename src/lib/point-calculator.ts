@@ -2,8 +2,17 @@ export function calculateCheckInPoints(targetTime: string, actualTime: Date): { 
   // DBの targetTime ("09:00" など) を Date に変換して比較するロジック
   const [targetHour, targetMin] = targetTime.split(':').map(Number);
   
-  const targetDate = new Date(actualTime);
-  targetDate.setHours(targetHour, targetMin, 0, 0);
+  // Create targetDate representing the given targetTime in JST today
+  const jstOffset = 9 * 60 * 60 * 1000;
+  const actualJST = new Date(actualTime.getTime() + jstOffset);
+  
+  const jstYear = actualJST.getUTCFullYear();
+  const jstMonth = actualJST.getUTCMonth();
+  const jstDate = actualJST.getUTCDate();
+
+  // Create absolute UTC timestamp for that JST target time
+  // e.g. 09:00 JST is 00:00 UTC
+  const targetDate = new Date(Date.UTC(jstYear, jstMonth, jstDate, targetHour - 9, targetMin, 0, 0));
   
   const diffInMs = actualTime.getTime() - targetDate.getTime();
   const diffInHours = diffInMs / (1000 * 60 * 60);

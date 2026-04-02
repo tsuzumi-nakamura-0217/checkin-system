@@ -33,7 +33,10 @@ function getTargetTimeForDate(
     checkInSun: boolean
   }
 ): { isCheckInDay: boolean; targetTime: string } {
-  const day = date.getDay()
+  // Convert current time to JST for determining the day of week
+  const jstOffset = 9 * 60 * 60 * 1000
+  const nowJST = new Date(date.getTime() + jstOffset)
+  const day = nowJST.getUTCDay()
 
   if (day === 1) return { isCheckInDay: user.checkInMon, targetTime: user.targetTimeMon ?? "09:00" }
   if (day === 2) return { isCheckInDay: user.checkInTue, targetTime: user.targetTimeTue ?? "09:00" }
@@ -79,10 +82,17 @@ export async function POST(request: Request) {
   }
 
   const now = new Date()
-  const dayStart = new Date(now)
-  dayStart.setHours(0, 0, 0, 0)
-  const nextDayStart = new Date(dayStart)
-  nextDayStart.setDate(nextDayStart.getDate() + 1)
+  
+  // Calculate boundaries for the current JST day
+  const jstOffset = 9 * 60 * 60 * 1000
+  const nowJST = new Date(now.getTime() + jstOffset)
+  const jstYear = nowJST.getUTCFullYear()
+  const jstMonth = nowJST.getUTCMonth()
+  const jstDate = nowJST.getUTCDate()
+
+  // 00:00 JST today is 15:00 UTC yesterday
+  const dayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate, -9, 0, 0, 0))
+  const nextDayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate + 1, -9, 0, 0, 0))
 
   const user = await prisma.user.findUnique({
     where: { id: currentUser.id },

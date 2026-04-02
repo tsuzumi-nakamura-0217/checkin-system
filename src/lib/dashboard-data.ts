@@ -111,7 +111,7 @@ export function getTaskTypeLabel(type: string) {
 }
 
 export function formatDateTimeLabel(date: Date) {
-  return new Intl.DateTimeFormat("ja-JP", {
+  return new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -120,7 +120,7 @@ export function formatDateTimeLabel(date: Date) {
 }
 
 export function formatTaskRange(startAt: Date, endAt: Date) {
-  return `${formatDateTimeLabel(startAt)} - ${new Intl.DateTimeFormat("ja-JP", {
+  return `${formatDateTimeLabel(startAt)} - ${new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     hour: "2-digit",
     minute: "2-digit",
   }).format(endAt)}`
@@ -132,10 +132,14 @@ export async function getDashboardData(
 ): Promise<DashboardData | null> {
   const now = new Date()
 
-  const dayStart = new Date(now)
-  dayStart.setHours(0, 0, 0, 0)
-  const nextDayStart = new Date(dayStart)
-  nextDayStart.setDate(nextDayStart.getDate() + 1)
+  const jstOffset = 9 * 60 * 60 * 1000
+  const nowJST = new Date(now.getTime() + jstOffset)
+  const jstYear = nowJST.getUTCFullYear()
+  const jstMonth = nowJST.getUTCMonth()
+  const jstDate = nowJST.getUTCDate()
+
+  const dayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate, -9, 0, 0, 0))
+  const nextDayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate + 1, -9, 0, 0, 0))
 
   const selectedWeekDate = parseWeekDateParam(weekParam) ?? now
   const weekStart = startOfWeekMonday(selectedWeekDate)
@@ -320,10 +324,10 @@ export async function getDashboardData(
   )
   const doneTaskCount = tasks.filter((task) => task.status === "DONE").length
 
-  const weekRangeLabel = `${new Intl.DateTimeFormat("ja-JP", {
+  const weekRangeLabel = `${new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     month: "2-digit",
     day: "2-digit",
-  }).format(weekStart)} - ${new Intl.DateTimeFormat("ja-JP", {
+  }).format(weekStart)} - ${new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date(weekEnd.getTime() - 1))}`
