@@ -72,6 +72,7 @@ export async function POST(request: Request) {
   }
 
   if (!isWithinLab(latitude, longitude)) {
+    console.log("Check-in failed due to location:", { latitude, longitude });
     return NextResponse.json(
       {
         success: false,
@@ -79,6 +80,8 @@ export async function POST(request: Request) {
       },
       { status: 403 }
     )
+  } else {
+    console.log("Check-in location validated:", { latitude, longitude });
   }
 
   const now = new Date()

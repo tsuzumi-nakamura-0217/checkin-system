@@ -19,12 +19,21 @@ export function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: numbe
 }
 
 export function isWithinLab(userLat: number, userLon: number): boolean {
-  const LAB_LATITUDE = parseFloat(process.env.LAB_LATITUDE || "0")
-  const LAB_LONGITUDE = parseFloat(process.env.LAB_LONGITUDE || "0")
-  const ALLOWED_RADIUS = parseFloat(process.env.ALLOWED_RADIUS_METERS || "50")
+  const latStr = process.env.LAB_LATITUDE
+  const lonStr = process.env.LAB_LONGITUDE
+  const radStr = process.env.ALLOWED_RADIUS_METERS
 
-  if (!LAB_LATITUDE || !LAB_LONGITUDE) return true // Disable validation if coords not set
+  if (!latStr || !lonStr) {
+    console.error("Environment variables LAB_LATITUDE or LAB_LONGITUDE are not set!")
+    return false // If not set, fail secure instead of allowing anyone to check in
+  }
+
+  const labLat = parseFloat(latStr)
+  const labLon = parseFloat(lonStr)
+  const allowedRadius = parseFloat(radStr || "100")
+
+  const distance = getDistanceFromLatLonInM(userLat, userLon, labLat, labLon)
+  console.log(`User distance from lab: ${distance} meters (allowed: ${allowedRadius}m)`)
   
-  const distance = getDistanceFromLatLonInM(userLat, userLon, LAB_LATITUDE, LAB_LONGITUDE)
-  return distance <= ALLOWED_RADIUS
+  return distance <= allowedRadius
 }
