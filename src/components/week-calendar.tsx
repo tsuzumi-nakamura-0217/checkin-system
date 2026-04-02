@@ -154,6 +154,12 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     setHasMounted(true)
   }, [])
 
+  const [localTasks, setLocalTasks] = useState<CalendarTask[]>(tasks)
+
+  useEffect(() => {
+    setLocalTasks(tasks)
+  }, [tasks])
+
   const weekStart = useMemo(() => new Date(weekStartIso), [weekStartIso])
 
   const checkInByDay = useMemo(() => {
@@ -174,7 +180,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
   const tasksByDay = useMemo(() => {
     const map = new Map<string, ScheduledCalendarTask[]>()
 
-    for (const task of tasks) {
+    for (const task of localTasks) {
       if (!task.startAt || !task.endAt) continue
 
       const startDate = new Date(task.startAt)
@@ -194,7 +200,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     }
 
     return map
-  }, [tasks])
+  }, [localTasks])
 
   const weekDays = useMemo(
     () =>
@@ -258,6 +264,14 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
 
   const updateTaskRange = useCallback(
     async (taskId: string, startAt: Date, endAt: Date) => {
+      setLocalTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, startAt: startAt.toISOString(), endAt: endAt.toISOString() }
+            : t
+        )
+      )
+
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -875,14 +889,14 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                           })
                           setTaskDragCurrent({ dayIndex: day.index, slotIndex: initialSlotIndex })
                         }}
-                        className={`pointer-events-auto absolute left-1 right-1 z-40 cursor-pointer rounded-xl border px-2.5 py-1.5 text-[11px] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${task.status === "DONE" ? "border-border bg-primary text-primary-foreground" : "border-border bg-background text-foreground"} ${taskDragContext?.taskId === task.id || taskResizeContext?.taskId === task.id ? "opacity-30" : ""}`}
+                        className={`pointer-events-auto absolute left-1 right-1 z-40 cursor-pointer rounded-xl border px-2.5 py-1.5 text-[11px] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${task.status === "DONE" ? "border-muted bg-muted text-muted-foreground" : "border-border bg-background text-foreground"} ${taskDragContext?.taskId === task.id || taskResizeContext?.taskId === task.id ? "opacity-50" : ""}`}
                         style={{ top, height }}
                       >
                         <button
                           type="button"
                           data-resize-handle="true"
                           aria-label="開始時刻を調整"
-                          className="absolute inset-x-2 -top-1 z-20 h-2 cursor-ns-resize rounded-full border border-border bg-background"
+                          className="absolute inset-x-2 -top-1 z-20 h-2 cursor-ns-resize rounded-full bg-transparent"
                           onClick={(event) => {
                             event.preventDefault()
                             event.stopPropagation()
@@ -911,7 +925,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                           type="button"
                           data-resize-handle="true"
                           aria-label="終了時刻を調整"
-                          className="absolute inset-x-2 -bottom-1 z-20 h-2 cursor-ns-resize rounded-full border border-border bg-background"
+                          className="absolute inset-x-2 -bottom-1 z-20 h-2 cursor-ns-resize rounded-full bg-transparent"
                           onClick={(event) => {
                             event.preventDefault()
                             event.stopPropagation()
@@ -940,13 +954,11 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
 
                   {daySelection ? (
                     <div
-                      className="pointer-events-none absolute left-1 right-1 z-20 rounded-xl border-2 border-primary bg-secondary"
+                      className="pointer-events-none absolute left-1 right-1 z-20 rounded-xl border border-foreground bg-card shadow-lg"
                       style={{ top: daySelection.top, height: daySelection.height }}
                     >
-                      <div className="absolute left-0 right-0 top-0 h-0.5 bg-primary" />
-                      <div className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary" />
                       {daySelectionInfo ? (
-                        <div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground whitespace-nowrap">
+                        <div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-full bg-foreground px-2.5 py-0.5 text-[10px] font-semibold text-background whitespace-nowrap shadow-sm">
                           {daySelectionInfo.rangeLabel} ({daySelectionInfo.durationLabel})
                         </div>
                       ) : null}
@@ -955,10 +967,10 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
 
                   {taskSelectionDay ? (
                     <div
-                      className="pointer-events-none absolute left-1 right-1 z-30 rounded-xl border border-border bg-secondary shadow-sm"
+                      className="pointer-events-none absolute left-1 right-1 z-30 rounded-xl border border-foreground bg-card shadow-lg flex items-center justify-center"
                       style={{ top: taskSelectionDay.top, height: taskSelectionDay.height }}
                     >
-                       <p className="px-2.5 py-1.5 text-[11px] font-medium text-foreground">
+                       <p className="rounded-full bg-foreground px-2.5 py-0.5 text-[10px] font-semibold text-background whitespace-nowrap shadow-sm">
                          {toDurationLabel(
                            buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0),
                            new Date(buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0).getTime() + (taskDragContext?.durationSlots || 0) * SLOT_MINUTES * 60 * 1000)
@@ -969,13 +981,13 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
 
                   {taskResizeSelectionDay ? (
                     <div
-                      className="pointer-events-none absolute left-1 right-1 z-30 rounded-xl border-2 border-primary bg-secondary shadow-sm"
+                      className="pointer-events-none absolute left-1 right-1 z-30 rounded-xl border border-foreground bg-card shadow-lg"
                       style={{ top: taskResizeSelectionDay.top, height: taskResizeSelectionDay.height }}
                     >
-                      <div className="absolute left-0 right-0 top-0 h-0.5 bg-primary" />
-                      <div className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary" />
+                      <div className="absolute left-0 right-0 top-0 h-[1px] bg-foreground" />
+                      <div className="absolute left-0 right-0 bottom-0 h-[1px] bg-foreground" />
                       {taskResizeSelectionInfo ? (
-                        <div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground whitespace-nowrap">
+                        <div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-full bg-foreground px-2.5 py-0.5 text-[10px] font-semibold text-background whitespace-nowrap shadow-sm">
                           {taskResizeSelectionInfo.rangeLabel} ({taskResizeSelectionInfo.durationLabel})
                         </div>
                       ) : null}
