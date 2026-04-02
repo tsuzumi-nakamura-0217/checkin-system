@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { buildTaskSummaryText } from "@/lib/task-summary"
+import { buildMorningReportText } from "@/lib/task-summary"
 
 type TodayTaskReportItem = {
   title: string
@@ -12,9 +12,10 @@ type TodayTaskReportItem = {
 
 type TodayTaskReportButtonProps = {
   todayTasks: TodayTaskReportItem[]
+  checkedInTimeLabel: string | null
 }
 
-export function TodayTaskReportButton({ todayTasks }: TodayTaskReportButtonProps) {
+export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel }: TodayTaskReportButtonProps) {
   const feedbackTimerRef = useRef<number | null>(null)
   const [feedback, setFeedback] = useState<"success" | "error" | null>(null)
 
@@ -27,13 +28,14 @@ export function TodayTaskReportButton({ todayTasks }: TodayTaskReportButtonProps
   }, [])
 
   const handleCopyReport = useCallback(async () => {
-    const summaryText = buildTaskSummaryText({
+    const summaryText = buildMorningReportText({
       date: new Date(),
       tasks: todayTasks.map((task) => ({
         title: task.title,
         status: task.status,
         estimatedHours: task.estimatedHours,
       })),
+      checkedInTimeLabel,
     })
 
     try {
@@ -51,7 +53,7 @@ export function TodayTaskReportButton({ todayTasks }: TodayTaskReportButtonProps
       setFeedback(null)
       feedbackTimerRef.current = null
     }, 2400)
-  }, [todayTasks])
+  }, [todayTasks, checkedInTimeLabel])
 
   return (
     <div className="flex items-center gap-2">

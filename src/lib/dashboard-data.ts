@@ -273,7 +273,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
   const { weekStart, weekEnd } = getWeekBoundaries(weekParam)
   const { dayStart, nextDayStart } = getTodayBoundaries()
 
-  const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks] = await Promise.all([
+  const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks, todayCheckIn] = await Promise.all([
     prisma.task.findMany({
       where: { userId },
       select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
@@ -290,6 +290,11 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     prisma.task.findMany({
       where: { userId, startAt: { gte: dayStart, lt: nextDayStart } },
       select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+    }),
+    prisma.checkIn.findFirst({
+      where: { userId, time: { gte: dayStart, lt: nextDayStart } },
+      orderBy: { time: "desc" },
+      select: { time: true },
     }),
   ])
 
@@ -318,7 +323,8 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     calendarCheckIns,
     todayTasks,
     weeklyCheckInPoints: weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0),
-    weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? item.estimatedHours * 10), 0)
+    weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? item.estimatedHours * 10), 0),
+    checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
   }
 }
 

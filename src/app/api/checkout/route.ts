@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
-import { buildTaskSummaryText } from "@/lib/task-summary"
+import { buildEveningReportText } from "@/lib/task-summary"
 
 export async function POST() {
   const currentUser = await getCurrentUser()
@@ -105,9 +105,25 @@ export async function POST() {
     },
   })
 
-  const taskSummaryText = buildTaskSummaryText({
+  const checkedInTimeLabel = new Intl.DateTimeFormat("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo",
+  }).format(new Date(todayCheckIn.time))
+
+  const checkedOutTimeLabel = updatedCheckIn.checkOutTime
+    ? new Intl.DateTimeFormat("ja-JP", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Tokyo",
+      }).format(new Date(updatedCheckIn.checkOutTime))
+    : null
+
+  const taskSummaryText = buildEveningReportText({
     date: now,
     tasks: todayTasks,
+    checkedInTimeLabel,
+    checkedOutTimeLabel,
   })
 
   revalidatePath("/dashboard", "layout")

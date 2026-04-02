@@ -132,10 +132,11 @@ export function TaskCreateForm() {
             <Input
               id="task-hours"
               type="number"
-              min={1}
+              min={0.5}
               max={24}
+              step={0.5}
               value={estimatedHours}
-              onChange={(event) => setEstimatedHours(Math.max(1, Math.min(24, Number(event.target.value) || 1)))}
+              onChange={(event) => setEstimatedHours(Math.max(0.5, Math.min(24, Number(event.target.value) || 0.5)))}
               className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
             />
           </div>

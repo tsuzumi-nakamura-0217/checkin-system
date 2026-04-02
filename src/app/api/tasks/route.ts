@@ -17,8 +17,8 @@ const ALLOWED_TASK_TYPES = new Set(["DAILY", "WEEKLY", "MONTHLY"])
 
 function normalizeEstimatedHours(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return 1
-  const rounded = Math.floor(value)
-  if (rounded < 1) return 1
+  const rounded = Math.round(value * 2) / 2
+  if (rounded < 0.5) return 0.5
   if (rounded > 24) return 24
   return rounded
 }

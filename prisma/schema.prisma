@@ -100,7 +100,7 @@ model Task {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title          String
   description    String?
-  estimatedHours Int      @default(1)
+  estimatedHours Float      @default(1)
   status         String   @default("TODO")
   type           String   @default("DAILY")
   startAt        DateTime?

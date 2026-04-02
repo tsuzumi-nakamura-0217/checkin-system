@@ -292,7 +292,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (!activeSelection) { setDragStart(null); setDragCurrent(null); window.setTimeout(() => { suppressPostDragClickRef.current = false }, 0); return }
     const sAt = buildDateFromSlot(weekStart, activeSelection.dayIndex, activeSelection.startSlot, startHour)
     const eAt = buildDateFromSlot(weekStart, activeSelection.dayIndex, activeSelection.endSlot, startHour)
-    const diffHours = Math.max(1, Math.ceil((eAt.getTime() - sAt.getTime()) / (60 * 60 * 1000)))
+    const diffHours = Math.max(0.5, Math.round((eAt.getTime() - sAt.getTime()) / (60 * 60 * 1000) * 2) / 2)
     setSelectedRange({ startAt: sAt, endAt: eAt }); setEditingTask(null); setTitle(""); setDescription(""); setStatus("TODO")
     setStartAtInput(""); setEndAtInput(""); setEstimatedHours(diffHours); setDragStart(null); setDragCurrent(null)
     setMessage(null); setIsError(false)
@@ -692,7 +692,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label htmlFor="calendar-task-hours" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間 (h)</label>
-                  <input id="calendar-task-hours" type="number" min={1} max={24} value={estimatedHours} onChange={(e) => { const next = Number(e.target.value); setEstimatedHours(Number.isFinite(next) ? Math.max(1, Math.min(24, next)) : 1) }} className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" />
+                  <input id="calendar-task-hours" type="number" min={0.5} max={24} step={0.5} value={estimatedHours} onChange={(e) => { const next = Number(e.target.value); setEstimatedHours(Number.isFinite(next) ? Math.max(0.5, Math.min(24, next)) : 0.5) }} className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" />
                 </div>
                 {editingTask ? (
                   <div className="space-y-1.5">

@@ -228,8 +228,8 @@ export async function PUT(
   }
 
   if (typeof body.estimatedHours === "number" && Number.isFinite(body.estimatedHours)) {
-    let rounded = Math.floor(body.estimatedHours)
-    if (rounded < 1) rounded = 1
+    let rounded = Math.round(body.estimatedHours * 2) / 2
+    if (rounded < 0.5) rounded = 0.5
     if (rounded > 24) rounded = 24
     dataToUpdate.estimatedHours = rounded
   }
