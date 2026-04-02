@@ -89,12 +89,14 @@ export function TaskCreateForm() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="h-12 rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary w-full sm:w-auto flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          新しいタスクを追加
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button className="h-12 w-full sm:w-auto rounded-2xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary flex items-center justify-center gap-2">
+            <Plus className="h-4 w-4" />
+            新しいタスクを追加
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-lg rounded-3xl border-border bg-card p-6 shadow-lg sm:p-8">
         <DialogHeader className="mb-2">
           <DialogTitle className="text-xl">新しいタスクを追加</DialogTitle>
