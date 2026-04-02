@@ -1,7 +1,4 @@
 // Require local environment configuration for lab location
-const LAB_LATITUDE = parseFloat(process.env.LAB_LATITUDE || "0")
-const LAB_LONGITUDE = parseFloat(process.env.LAB_LONGITUDE || "0")
-const ALLOWED_RADIUS = parseFloat(process.env.ALLOWED_RADIUS_METERS || "50")
 
 function deg2rad(deg: number) {
   return deg * (Math.PI / 180)
@@ -22,6 +19,10 @@ export function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: numbe
 }
 
 export function isWithinLab(userLat: number, userLon: number): boolean {
+  const LAB_LATITUDE = parseFloat(process.env.LAB_LATITUDE || "0")
+  const LAB_LONGITUDE = parseFloat(process.env.LAB_LONGITUDE || "0")
+  const ALLOWED_RADIUS = parseFloat(process.env.ALLOWED_RADIUS_METERS || "50")
+
   if (!LAB_LATITUDE || !LAB_LONGITUDE) return true // Disable validation if coords not set
   
   const distance = getDistanceFromLatLonInM(userLat, userLon, LAB_LATITUDE, LAB_LONGITUDE)
