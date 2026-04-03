@@ -110,7 +110,7 @@ export async function POST() {
     )
   }
 
-  const { isCheckInDay, targetTime } = getTargetTimeForDate(now, user)
+  const { isCheckInDay, targetTime: defaultTargetTime } = getTargetTimeForDate(now, user)
 
   if (!isCheckInDay) {
     return NextResponse.json(
@@ -120,6 +120,24 @@ export async function POST() {
       },
       { status: 403 }
     )
+  }
+
+  // 事前申告（遅刻）がある場合、申告された出勤予定時刻を目標時刻として使用する
+  let targetTime = defaultTargetTime
+  const lateException = await prisma.exceptionRequest.findFirst({
+    where: {
+      userId: user.id,
+      type: "LATE",
+      status: "APPROVED",
+      date: {
+        gte: dayStart,
+        lt: nextDayStart,
+      },
+    },
+  })
+
+  if (lateException?.newTargetTime) {
+    targetTime = lateException.newTargetTime
   }
 
   // 在宅勤務: ポイントは常に0、ステータスは REMOTE
