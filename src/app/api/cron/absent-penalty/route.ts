@@ -111,10 +111,10 @@ export async function GET(request: Request) {
       }
 
       if (diffInMs > 0) {
-        const lateHours = Math.floor(diffInMs / (1000 * 60 * 60));
+        const lateMinutes = Math.floor(diffInMs / (1000 * 60));
         
-        if (lateHours > 0) {
-          const penaltyPoints = -(lateHours * 100);
+        if (lateMinutes > 0) {
+          const penaltyPoints = -(lateMinutes * 10);
 
           // Insert an absent record and deduct points
           await prisma.$transaction([

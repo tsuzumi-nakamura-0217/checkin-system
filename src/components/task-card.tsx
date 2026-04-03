@@ -137,7 +137,7 @@ export function TaskCard({ task }: TaskCardProps) {
 
             {isDone ? (
               <p className="text-[11px] font-bold text-accent pt-0.5">
-                {`完了ポイント: ${formatPoint(task.pointsEarned ?? task.estimatedHours * 10)}pt`}
+                {`完了ポイント: ${formatPoint(task.pointsEarned ?? Math.floor(task.estimatedHours / 0.5))}pt`}
               </p>
             ) : null}
           </div>

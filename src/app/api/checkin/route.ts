@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
-import { isWithinLab } from "@/lib/location-validator"
+import { isWithinLab, getDistanceFromLatLonInM } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 
 type CheckInRequestBody = {
@@ -72,12 +72,30 @@ export async function POST(request: Request) {
     )
   }
 
+  // Temporary debug: compute distance info for diagnosis
+  const labLatStr = process.env.LAB_LATITUDE
+  const labLonStr = process.env.LAB_LONGITUDE
+  const radStr = process.env.ALLOWED_RADIUS_METERS
+  const debugInfo = {
+    userLat: latitude,
+    userLon: longitude,
+    labLatSet: !!labLatStr,
+    labLonSet: !!labLonStr,
+    labLat: labLatStr ? parseFloat(labLatStr) : null,
+    labLon: labLonStr ? parseFloat(labLonStr) : null,
+    allowedRadius: radStr ? parseFloat(radStr) : 100,
+    distance: labLatStr && labLonStr
+      ? getDistanceFromLatLonInM(latitude, longitude, parseFloat(labLatStr), parseFloat(labLonStr))
+      : null,
+  }
+
   if (!isWithinLab(latitude, longitude)) {
-    console.log("Check-in failed due to location:", { latitude, longitude });
+    console.log("Check-in failed due to location:", debugInfo);
     return NextResponse.json(
       {
         success: false,
         error: "研究室の指定範囲外です。位置情報を確認してから再度チェックインしてください。",
+        debug: debugInfo,
       },
       { status: 403 }
     )

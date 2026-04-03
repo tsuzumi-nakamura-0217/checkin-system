@@ -15,22 +15,23 @@ export function calculateCheckInPoints(targetTime: string, actualTime: Date): { 
   const targetDate = new Date(Date.UTC(jstYear, jstMonth, jstDate, targetHour - 9, targetMin, 0, 0));
   
   const diffInMs = actualTime.getTime() - targetDate.getTime();
-  const diffInHours = diffInMs / (1000 * 60 * 60);
+  // 秒数は切り捨てて無視し、分単位で計算する
+  const diffInMinutes = Math.trunc(diffInMs / (1000 * 60));
   
-  if (diffInHours <= 0) {
-    // 早く到着した場合
-    const earlyHours = Math.floor(Math.abs(diffInHours));
-    if (earlyHours > 0) {
-      return { points: earlyHours * 100, status: 'EARLY' };
-    }
-    return { points: 0, status: 'ON_TIME' };
+  if (diffInMinutes < 0) {
+    // 早く到着した場合: 1分ごとに +1ポイント
+    const earlyMinutes = Math.abs(diffInMinutes);
+    return { points: earlyMinutes * 1, status: 'EARLY' };
+  } else if (diffInMinutes > 0) {
+    // 遅刻した場合: 1分ごとに -10ポイント
+    return { points: -(diffInMinutes * 10), status: 'LATE' };
   } else {
-    // 遅刻した場合
-    const lateHours = Math.floor(diffInHours);
-    if (lateHours > 0) {
-      return { points: -(lateHours * 100), status: 'LATE' };
-    }
-    // 0〜59分の遅れは0ポイント変動でLATEまたはON_TIME扱い（要件に準拠: ぴったり1時間のルール）
-    return { points: 0, status: 'ON_TIME' }; // 丸めてON_TIMEとする
+    // ぴったり到着
+    return { points: 0, status: 'ON_TIME' };
   }
+}
+
+export function calculateTaskCompletionPoints(estimatedHours: number): number {
+  // 0.5hごとに+1ポイント
+  return Math.floor(estimatedHours / 0.5) * 1;
 }

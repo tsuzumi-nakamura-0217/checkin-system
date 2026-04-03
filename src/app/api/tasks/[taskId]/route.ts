@@ -3,14 +3,13 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
+import { calculateTaskCompletionPoints } from "@/lib/point-calculator"
 
 type UpdateTaskStatusRequestBody = {
   status?: unknown
 }
 
-function calculateTaskCompletionPoints(estimatedHours: number) {
-  return estimatedHours * 10
-}
+// calculateTaskCompletionPoints is imported from @/lib/point-calculator
 
 export async function PATCH(
   request: Request,

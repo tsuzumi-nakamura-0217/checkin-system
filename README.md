@@ -1,76 +1,64 @@
-# Check-in System
+# 研究室チェックイン・タスク管理システム
 
-Research lab check-in web application built with Next.js, NextAuth, Prisma, and Turso.
+研究室のメンバー向けに作られた、出欠席（チェックイン）管理およびタスク管理機能を備えたシステムです。
+位置情報を利用した出欠記録のほか、日々のタスクや就職活動の状況を統合して管理することができます。
 
-## Tech Stack
+## 🎯 主な機能と使い方
 
-- Next.js (App Router)
-- NextAuth (Google OAuth)
-- Prisma ORM
-- Turso (libSQL)
+### 1. チェックイン機能 (Check-in)
+- **概要**: スマホやPCから現在の位置情報を送信し、研究室に到着したことを記録します。
+- **使い方**: 曜日ごとに設定された目標時間（例：09:00）や指定日（登校日）に合わせてチェックインします。ダッシュボードの「チェックイン」ボタンを押すだけで完了です。
+- **注記**: 事前に設定されたチェックイン対象日にのみチェックインが可能です。1日1回のみカウントされます。
 
-## Prerequisites
+### 2. 事前連絡システム（遅刻・欠席）
+- **概要**: やむを得ない理由で遅刻・欠席する場合の申請機能です。
+- **使い方**: ダッシュボードの専用フォームから「遅刻」あるいは「欠席」の事前連絡を追加できます。
+- **期限**: **前日の23:59まで** に申請を完了させる必要があります。
 
-- Node.js 20+
-- npm
-- Turso database URL and auth token
-- Google OAuth client credentials
+### 3. タスク管理・ウィークリーカレンダー
+- **概要**: 日々の研究タスクなどを管理し、週次のカレンダー形式で表示します。
+- **使い方**:
+  - タスクの追加・編集がポップアップ画面からスムーズに行えます。
+  - カレンダー上でのドラッグ＆ドロップによるリスケジュールが可能です。
+  - トータル作業時間の集計のため、所要時間は30分などの小数点単位の入力にも対応しています。
+  - カレンダーから直接ステータス（完了・未完了）をボタンで切り替えられます。
 
-## Environment Variables
+---
 
-Configure `.env`:
+## 🧮 チェックインポイントと計算ロジック
 
-```dotenv
-DATABASE_URL="file:./dev.db"
-TURSO_DATABASE_URL="libsql://your-db-name-your-account.turso.io"
-TURSO_AUTH_TOKEN="your_turso_auth_token"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="replace-with-a-random-secret"
-GOOGLE_CLIENT_ID="your_google_client_id"
-GOOGLE_CLIENT_SECRET="your_google_client_secret"
-```
+本システムでは、チェックイン時刻に応じて増減する「ポイント機能」を採用しています。
 
-Notes:
+### 📍 位置情報判定について
+チェックイン時にはデバイスのGPS情報（緯度・経度）を取得し、**研究室の指定座標から一定半径内（デフォルトで100m）** にいるかどうかの判定が行われます。指定範囲外の場合は警告が表示され、チェックインが許可されません。
 
-- `DATABASE_URL` is used by Prisma CLI and must stay `file:` for sqlite provider.
-- `TURSO_DATABASE_URL` is used by the runtime Prisma adapter to connect to Turso.
-- Keep credentials out of source control.
+### ⏰ チェックインポイント計算ルール
+あらかじめ設定した「目標到着時間」と「実際のチェックイン時間」の差分をもとにポイントが計算されます。**秒数は切り捨てて無視** し、分単位で計算されます。
 
-## Setup
+- **遅刻ペナルティ**
+  - 目標時間より遅れた場合、**1分ごとに -10ポイント** となります。
+  - *(例: 目標9:00に対して 9:02にチェックイン → 2分遅れ → **-20ポイント**)*
+  - *(例: 目標9:00に対して 9:30にチェックイン → 30分遅れ → **-300ポイント**)*
 
-Install dependencies:
+- **早着ボーナス**
+  - 目標時間より早くチェックインした場合、**1分ごとに +1ポイント** が付与されます。
+  - *(例: 目標9:00に対して 8:57にチェックイン → 3分早い → **+3ポイント**)*
 
-```bash
-npm install
-```
+- **ぴったり到着（ON_TIME）**
+  - 目標時間ちょうどにチェックインした場合は **0ポイント** です。
+  - *(例: 目標9:00に対して 9:00にチェックイン → **0ポイント**)*
 
-Generate Prisma client:
+### 📝 タスク完了ポイント
+タスクを完了（DONE）に変更すると、見積もり時間に応じてポイントが付与されます。
 
-```bash
-npx prisma generate
-```
+- **0.5時間ごとに +1ポイント**
+  - *(例: 見積もり 1.0h のタスク完了 → **+2ポイント**)*
+  - *(例: 見積もり 2.5h のタスク完了 → **+5ポイント**)*
+  - *(例: 見積もり 0.5h のタスク完了 → **+1ポイント**)*
 
-Push schema to Turso:
+---
 
-```bash
-npx prisma db push
-```
+## ⚠️ 注意事項
 
-Note: `prisma db push` applies schema to the local sqlite file (`DATABASE_URL`).
-Runtime queries still use Turso via `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`.
-
-Start development server:
-
-```bash
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-## Verification Checklist
-
-1. `npx prisma generate` completes without errors.
-2. `npx prisma db push` succeeds against Turso.
-3. `npm run lint` passes.
-4. Google login works from `/login`.
-5. User, Account, and Session records are created in Turso.
+1. **位置情報の許可**: チェックインを行うには、ブラウザまたは端末の設定画面から「位置情報サービス（GPS）」の利用を許可してください。
+2. **タイムゾーン**: 全ての計算は日本標準時 (JST) に基づいて行われます。日替わりのタイミングは午前0時(JST)です。

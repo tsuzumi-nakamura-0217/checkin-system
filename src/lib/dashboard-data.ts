@@ -220,7 +220,7 @@ export async function getOverviewData(userId: string) {
 
   const computedTotalPoints =
     (totalCheckInPoints._sum.pointsEarned ?? 0) +
-    totalDoneTaskPoints.reduce((sum, item) => sum + (item.pointsEarned ?? item.estimatedHours * 10), 0)
+    totalDoneTaskPoints.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
 
   const todayTasks = tasks
     .filter((task) => task.startAt && task.endAt && task.startAt >= dayStart && task.startAt < nextDayStart)
@@ -228,7 +228,7 @@ export async function getOverviewData(userId: string) {
 
   const weeklyCheckInPoints = weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0)
   const weeklyCheckInCount = weeklyCheckIns.length
-  const weeklyTaskPoints = weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? item.estimatedHours * 10), 0)
+  const weeklyTaskPoints = weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
 
   return {
     user: { points: computedTotalPoints },
@@ -323,7 +323,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     calendarCheckIns,
     todayTasks,
     weeklyCheckInPoints: weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0),
-    weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? item.estimatedHours * 10), 0),
+    weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0),
     checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
   }
 }
