@@ -7,7 +7,13 @@ import { formatPoint, getCheckInStatusLabel, getOverviewData } from "@/lib/dashb
 import { getCurrentUser } from "@/lib/current-user"
 
 function getGreeting(): string {
-  const hour = new Date().getHours()
+  const hourText = new Intl.DateTimeFormat("ja-JP", {
+    hour: "numeric",
+    hour12: false,
+    timeZone: "Asia/Tokyo",
+  }).format(new Date())
+  const hour = parseInt(hourText, 10)
+
   if (hour < 6) return "お疲れさまです 🌙"
   if (hour < 12) return "おはようございます ☀️"
   if (hour < 18) return "こんにちは 👋"
