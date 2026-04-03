@@ -9,7 +9,7 @@ type CheckInButtonProps = {
 
 type CheckInSuccessResponse = {
   success: true
-  status: "EARLY" | "LATE" | "ON_TIME"
+  status: "EARLY" | "LATE" | "ON_TIME" | "REMOTE"
   pointsEarned: number
   totalPoints: number
   targetTime: string
@@ -38,17 +38,20 @@ function toPointLabel(points: number): string {
   return String(points)
 }
 
-function toStatusLabel(status: "EARLY" | "LATE" | "ON_TIME"): string {
+function toStatusLabel(status: "EARLY" | "LATE" | "ON_TIME" | "REMOTE"): string {
   if (status === "EARLY") return "早着"
   if (status === "LATE") return "遅刻"
+  if (status === "REMOTE") return "在宅勤務"
   return "時間内"
 }
 
 export function CheckInButton({ checkedIn }: CheckInButtonProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRemoteSubmitting, setIsRemoteSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isError, setIsError] = useState(false)
+  const [showRemoteConfirm, setShowRemoteConfirm] = useState(false)
 
   const handleClick = async () => {
     if (checkedIn || isSubmitting) return
@@ -96,12 +99,49 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
     }
   }
 
+  const handleRemoteCheckIn = async () => {
+    if (checkedIn || isRemoteSubmitting) return
+
+    setIsRemoteSubmitting(true)
+    setMessage(null)
+    setIsError(false)
+    setShowRemoteConfirm(false)
+
+    try {
+      const response = await fetch("/api/checkin/remote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const data = (await response.json()) as CheckInSuccessResponse | CheckInErrorResponse
+
+      if (!response.ok || !data.success) {
+        const errorMessage = data && !data.success ? data.error : "チェックインに失敗しました。"
+        throw new Error(errorMessage)
+      }
+
+      setMessage(
+        `在宅勤務チェックイン完了 (0pt)`
+      )
+      router.refresh()
+    } catch (error) {
+      setIsError(true)
+      setMessage(error instanceof Error ? error.message : "チェックインに失敗しました。")
+    } finally {
+      setIsRemoteSubmitting(false)
+    }
+  }
+
+  const isBusy = isSubmitting || isRemoteSubmitting
+
   return (
     <div className="flex w-full flex-col gap-2">
       <button
         type="button"
         onClick={handleClick}
-        disabled={checkedIn || isSubmitting}
+        disabled={checkedIn || isBusy}
         className={`w-full rounded-xl px-8 py-3.5 text-center text-sm font-bold shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 ${
           checkedIn
             ? "bg-accent/10 text-accent border border-accent/20"
@@ -129,6 +169,52 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
           "チェックインする"
         )}
       </button>
+
+      {/* 在宅勤務チェックイン */}
+      {!checkedIn && !isBusy && !showRemoteConfirm && (
+        <button
+          type="button"
+          onClick={() => setShowRemoteConfirm(true)}
+          className="w-full rounded-lg px-4 py-2 text-center text-xs font-medium text-muted-foreground border border-dashed border-border bg-background/60 transition-all duration-200 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            在宅勤務でチェックイン
+          </span>
+        </button>
+      )}
+
+      {/* 確認ダイアログ */}
+      {showRemoteConfirm && !checkedIn && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2 animate-fade-in">
+          <p className="text-xs text-amber-800 font-medium">
+            在宅勤務としてチェックインしますか？
+          </p>
+          <p className="text-[10px] text-amber-600">
+            ※ 到着時刻によるポイント加減算はありません（0pt）
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleRemoteCheckIn}
+              disabled={isRemoteSubmitting}
+              className="flex-1 rounded-md px-3 py-1.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors disabled:opacity-50"
+            >
+              {isRemoteSubmitting ? "処理中..." : "確定する"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowRemoteConfirm(false)}
+              className="flex-1 rounded-md px-3 py-1.5 text-xs font-medium text-amber-700 border border-amber-300 bg-white hover:bg-amber-50 transition-colors"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
+
       {message ? (
         <p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>
       ) : null}

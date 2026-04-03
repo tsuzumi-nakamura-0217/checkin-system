@@ -67,6 +67,7 @@ function getCheckInStatusLabel(status: string): string {
   if (status === "EARLY") return "早着"
   if (status === "LATE") return "遅刻"
   if (status === "ON_TIME") return "時間内"
+  if (status === "REMOTE") return "在宅"
   return status
 }
 
@@ -74,6 +75,7 @@ function getCheckInStatusColor(status: string): string {
   if (status === "EARLY") return "bg-accent text-accent-foreground"
   if (status === "LATE") return "bg-destructive/10 text-destructive"
   if (status === "ON_TIME") return "bg-primary/10 text-primary"
+  if (status === "REMOTE") return "bg-amber-100 text-amber-700"
   return "bg-muted text-muted-foreground"
 }
 

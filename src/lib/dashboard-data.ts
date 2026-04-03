@@ -101,6 +101,7 @@ export function getCheckInStatusLabel(status: string) {
   if (status === "EARLY") return "早着"
   if (status === "LATE") return "遅刻"
   if (status === "ON_TIME") return "時間内"
+  if (status === "REMOTE") return "在宅勤務"
   return status
 }
 

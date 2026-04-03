@@ -12,6 +12,7 @@ function getStatusBadgeClass(status: string): string {
   if (status === "EARLY") return "bg-accent/10 text-accent"
   if (status === "LATE") return "bg-destructive/10 text-destructive"
   if (status === "ON_TIME") return "bg-primary/10 text-primary"
+  if (status === "REMOTE") return "bg-amber-100 text-amber-700"
   return "bg-muted text-muted-foreground"
 }
 
