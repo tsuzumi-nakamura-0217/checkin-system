@@ -87,11 +87,12 @@ export default async function DashboardOverviewPage() {
               </svg>
             </div>
             <div>
-              <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">完了タスク</p>
+              <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスクポイント</p>
               <p className="text-2xl font-bold text-foreground tabular-nums">
-                {data.doneTaskCount}
-                <span className="ml-1 text-sm font-semibold text-accent">件</span>
+                {formatPoint(data.totalTaskPoints)}
+                <span className="ml-1 text-sm font-semibold text-accent">pt</span>
               </p>
+              <p className="text-[10px] text-muted-foreground tabular-nums">{data.doneTaskCount} 件完了 · 総ポイントに反映済み</p>
             </div>
           </div>
         </section>

@@ -218,9 +218,10 @@ export async function getOverviewData(userId: string) {
 
   if (!user) return null
 
-  const computedTotalPoints =
-    (totalCheckInPoints._sum.pointsEarned ?? 0) +
-    totalDoneTaskPoints.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
+  const totalCheckInPointsValue = totalCheckInPoints._sum.pointsEarned ?? 0
+  const totalTaskPointsValue = totalDoneTaskPoints.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
+
+  const computedTotalPoints = totalCheckInPointsValue + totalTaskPointsValue
 
   const todayTasks = tasks
     .filter((task) => task.startAt && task.endAt && task.startAt >= dayStart && task.startAt < nextDayStart)
@@ -245,6 +246,8 @@ export async function getOverviewData(userId: string) {
     weekRangeLabel: getWeekRangeLabel(weekStart, weekEnd),
     weekStart,
     weekEnd,
+    totalCheckInPoints: totalCheckInPointsValue,
+    totalTaskPoints: totalTaskPointsValue,
   }
 }
 
