@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
           isActive: true,
           deadline: { gte: now },
         },
+        orderBy: { createdAt: "desc" },
         select: { id: true }
       })
       effectiveGoalId = activeGoal?.id || null
@@ -71,30 +72,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { content } = await req.json()
+    const { content, goalId } = await req.json()
     if (!content || content.trim() === "") {
       return NextResponse.json({ error: "Content is required" }, { status: 400 })
     }
 
     const now = new Date()
-    // Get active goal
-    const activeGoal = await prisma.communityGoal.findFirst({
-      where: {
-        isActive: true,
-        deadline: { gte: now },
-      },
-      select: { id: true }
-    })
+    let effectiveGoalId: string | null = goalId ?? null
+
+    if (!effectiveGoalId) {
+      const activeGoal = await prisma.communityGoal.findFirst({
+        where: {
+          isActive: true,
+          deadline: { gte: now },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true }
+      })
+
+      effectiveGoalId = activeGoal?.id ?? null
+    }
+
+    if (!effectiveGoalId) {
+      return NextResponse.json({ error: "Active goal not found" }, { status: 400 })
+    }
 
     const comment = await prisma.communityComment.create({
       data: {
         content,
         userId: user.id,
-        goalId: activeGoal?.id || null,
+        goalId: effectiveGoalId,
       },
       include: {
         user: {
           select: {
+            id: true,
             name: true,
             image: true,
           },
@@ -102,7 +114,11 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json(comment)
+    return NextResponse.json({
+      ...comment,
+      readCount: 0,
+      isReadByMe: true,
+    })
   } catch (error) {
     console.error("Error posting community comment:", error)
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })

@@ -24,10 +24,11 @@ interface Comment {
 }
 
 interface ChatSectionProps {
-  goalId?: string // Optional: if provided, show comments for this goal
+  goalId?: string
+  readOnly?: boolean
 }
 
-export function ChatSection({ goalId }: ChatSectionProps) {
+export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -35,12 +36,10 @@ export function ChatSection({ goalId }: ChatSectionProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const isHistorical = !!goalId
-
   const fetchComments = async () => {
     try {
-      const url = isHistorical 
-        ? `/api/community/comments?goalId=${goalId}` 
+      const url = goalId
+        ? `/api/community/comments?goalId=${goalId}`
         : "/api/community/comments"
       const res = await fetch(url)
       if (res.ok) {
@@ -59,7 +58,7 @@ export function ChatSection({ goalId }: ChatSectionProps) {
           .filter((c: Comment) => !c.isReadByMe && c.user.id !== currentUserId)
           .map((c: Comment) => c.id)
 
-        if (unreadIds.length > 0 && !isHistorical) {
+        if (unreadIds.length > 0 && !readOnly) {
           markAsRead(unreadIds)
         }
       }
@@ -102,7 +101,7 @@ export function ChatSection({ goalId }: ChatSectionProps) {
     fetchComments()
     
     // Only poll for live chat
-    if (!isHistorical) {
+    if (!readOnly) {
       const interval = setInterval(fetchComments, 10000)
       return () => clearInterval(interval)
     }
@@ -123,7 +122,7 @@ export function ChatSection({ goalId }: ChatSectionProps) {
       const res = await fetch("/api/community/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newComment }),
+        body: JSON.stringify({ content: newComment, goalId }),
       })
 
       if (res.ok) {
@@ -213,7 +212,7 @@ export function ChatSection({ goalId }: ChatSectionProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-4 border-t border-border bg-card/50">
-        {isHistorical ? (
+        {readOnly ? (
           <p className="w-full text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest py-2">
             この目標は終了しました。チャットは閲覧のみ可能です。
           </p>

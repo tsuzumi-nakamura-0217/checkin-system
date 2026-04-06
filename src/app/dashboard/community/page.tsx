@@ -351,7 +351,7 @@ export default function CommunityPage() {
 
           <div className="grid gap-8 lg:grid-cols-2">
             <Leaderboard data={stats?.leaderboard || []} />
-            <ChatSection />
+            <ChatSection goalId={goal.id} />
           </div>
         </>
       ) : (
@@ -381,7 +381,7 @@ export default function CommunityPage() {
               
               <div className="grid gap-8 lg:grid-cols-2">
                 <Leaderboard data={historyDetail?.leaderboard || []} />
-                <ChatSection goalId={selectedHistoryGoal.id} />
+                <ChatSection goalId={selectedHistoryGoal.id} readOnly />
               </div>
             </>
           ) : (
