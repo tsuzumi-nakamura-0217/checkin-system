@@ -16,17 +16,21 @@ export async function CommunitySummaryCard() {
 
     if (!goal) return null
 
-    const targetField =
-      goal.type === "LOGIN_STREAK" ? "loginStreak" :
-      goal.type === "CHECKIN_STREAK" ? "checkinStreak" :
-      "points"
-
     const totalPointsResult = await prisma.communityContribution.aggregate({
       where: buildCommunityParticipantWhere(goal.id),
-      _sum: { [targetField]: true },
+      _sum: {
+        points: true,
+        loginStreak: true,
+        checkinStreak: true,
+      },
     })
 
-    const currentPoints = totalPointsResult._sum[targetField] || 0
+    const currentPoints =
+      goal.type === "LOGIN_STREAK"
+        ? totalPointsResult._sum.loginStreak ?? 0
+        : goal.type === "CHECKIN_STREAK"
+          ? totalPointsResult._sum.checkinStreak ?? 0
+          : totalPointsResult._sum.points ?? 0
     const unit = goal.type === "POINTS" ? "pt" : "日"
     const percentage = Math.min(Math.round((currentPoints / goal.targetPoints) * 100), 100)
 
