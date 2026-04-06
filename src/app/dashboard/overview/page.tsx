@@ -6,6 +6,7 @@ import { CheckOutButton } from "@/components/check-out-button"
 import { formatPoint, getCheckInStatusLabel, getOverviewData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { CommunitySummaryCard } from "@/components/community/summary-card"
+import { updateUserLoginStreak } from "@/lib/streak-utils"
 
 function getGreeting(): string {
   const hourText = new Intl.DateTimeFormat("ja-JP", {
@@ -28,6 +29,9 @@ export default async function DashboardOverviewPage() {
     redirect("/login")
   }
 
+  // Update personal login streak
+  await updateUserLoginStreak(currentUser.id)
+  
   const data = await getOverviewData(currentUser.id)
 
   if (!data) {
@@ -139,6 +143,43 @@ export default async function DashboardOverviewPage() {
                 {formatPoint(weeklyTotalPoints)}
                 <span className="ml-1 text-sm font-semibold text-chart-5">pt</span>
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="group rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-themed hover:border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0121 13a8.144 8.144 0 01-.343 2.314z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">連続ログイン</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">
+                {data.loginStreak}
+                <span className="ml-1 text-sm font-semibold text-orange-500">日</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground tabular-nums">自己ベスト: {data.maxLoginStreak} 日</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="group rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-themed hover:border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">連続時間内</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">
+                {data.checkInStreak}
+                <span className="ml-1 text-sm font-semibold text-blue-500">回</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground tabular-nums">自己ベスト: {data.maxCheckInStreak} 回</p>
             </div>
           </div>
         </section>

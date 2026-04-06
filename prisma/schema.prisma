@@ -42,6 +42,14 @@ model User {
   communityContributions CommunityContribution[]
   communityCommentReads CommunityCommentRead[]
 
+  loginStreak      Int       @default(0)
+  lastLoginDate    DateTime?
+  maxLoginStreak   Int       @default(0)
+  
+  checkInStreak    Int       @default(0)
+  lastCheckInDate  DateTime?
+  maxCheckInStreak Int       @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

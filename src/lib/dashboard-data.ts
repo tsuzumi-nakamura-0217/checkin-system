@@ -91,6 +91,10 @@ export type DashboardData = {
   calendarTasks: DashboardCalendarTask[]
   calendarCheckIns: DashboardCalendarCheckIn[]
   todayTasks: DashboardCalendarTask[]
+  loginStreak: number
+  checkInStreak: number
+  maxLoginStreak: number
+  maxCheckInStreak: number
 }
 
 export function formatPoint(points: number) {
@@ -170,8 +174,28 @@ export async function getOverviewData(userId: string) {
   const { dayStart, nextDayStart } = getTodayBoundaries()
   const { weekStart, weekEnd } = getWeekBoundaries()
 
+  // Use separate try-catch for user data to handle missing columns gracefully during transitions
+  let user;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { 
+        points: true,
+        loginStreak: true,
+        checkInStreak: true,
+        maxLoginStreak: true,
+        maxCheckInStreak: true
+      },
+    })
+  } catch (error) {
+    console.warn("Falling back to basic user select due to missing columns:", error)
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { points: true },
+    })
+  }
+
   const [
-    user,
     todayCheckIn,
     tasks,
     weeklyCheckIns,
@@ -180,10 +204,6 @@ export async function getOverviewData(userId: string) {
     totalCheckInPoints,
     totalDoneTaskPoints,
   ] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { points: true },
-    }),
     prisma.checkIn.findFirst({
       where: { userId, time: { gte: dayStart, lt: nextDayStart } },
       orderBy: { time: "desc" },
@@ -249,6 +269,10 @@ export async function getOverviewData(userId: string) {
     weekEnd,
     totalCheckInPoints: totalCheckInPointsValue,
     totalTaskPoints: totalTaskPointsValue,
+    loginStreak: (user as any)?.loginStreak ?? 0,
+    checkInStreak: (user as any)?.checkInStreak ?? 0,
+    maxLoginStreak: (user as any)?.maxLoginStreak ?? 0,
+    maxCheckInStreak: (user as any)?.maxCheckInStreak ?? 0,
   }
 }
 
@@ -365,5 +389,9 @@ export async function getDashboardData(userId: string, weekParam?: string | stri
     calendarTasks: calendar.calendarTasks,
     calendarCheckIns: calendar.calendarCheckIns,
     todayTasks: overview.todayTasks,
+    loginStreak: overview.loginStreak,
+    checkInStreak: overview.checkInStreak,
+    maxLoginStreak: overview.maxLoginStreak,
+    maxCheckInStreak: overview.maxCheckInStreak,
   }
 }
