@@ -2,6 +2,47 @@ import { prisma } from "./prisma"
 
 const JST_OFFSET = 9 * 60 * 60 * 1000
 
+export async function markUserCheckInNoCount(userId: string, baseDate: Date = new Date()) {
+  try {
+    let user: any
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          lastCheckInDate: true,
+        },
+      })
+    } catch (e) {
+      console.warn("Skipping no-count check-in marker due to missing columns in DB.")
+      return
+    }
+
+    if (!user) return
+
+    const todayJST = new Date(baseDate.getTime() + JST_OFFSET)
+    todayJST.setUTCHours(0, 0, 0, 0)
+
+    if (user.lastCheckInDate) {
+      const lastCheckInJST = new Date(user.lastCheckInDate.getTime() + JST_OFFSET)
+      lastCheckInJST.setUTCHours(0, 0, 0, 0)
+
+      if (lastCheckInJST.getTime() === todayJST.getTime()) {
+        return
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        lastCheckInDate: baseDate,
+      } as any,
+    })
+  } catch (error) {
+    console.error("Error marking no-count check-in day:", error)
+  }
+}
+
 export async function updateUserLoginStreak(userId: string) {
   try {
     let user: any;
@@ -156,7 +197,7 @@ export async function updateUserCheckInStreak(userId: string, status: string) {
         } as any,
       })
     } else {
-      // First on-time check-in
+      // First valid check-in (EARLY or ON_TIME)
       await prisma.user.update({
         where: { id: userId },
         data: {

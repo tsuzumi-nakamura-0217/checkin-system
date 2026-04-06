@@ -1,24 +1,39 @@
 import Link from "next/link"
+import { buildCommunityParticipantWhere } from "@/lib/community-participation"
 import { prisma } from "@/lib/prisma"
+import { MissionParticipationQuickAction } from "@/components/community/mission-participation-quick-action"
 
 export async function CommunitySummaryCard() {
   try {
+    const now = new Date()
     const goal = await prisma.communityGoal.findFirst({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        deadline: { gte: now },
+      },
       orderBy: { createdAt: "desc" },
     })
 
     if (!goal) return null
 
-    const totalPointsResult = await prisma.user.aggregate({
-      _sum: { points: true },
+    const targetField =
+      goal.type === "LOGIN_STREAK" ? "loginStreak" :
+      goal.type === "CHECKIN_STREAK" ? "checkinStreak" :
+      "points"
+
+    const totalPointsResult = await prisma.communityContribution.aggregate({
+      where: buildCommunityParticipantWhere(goal.id),
+      _sum: { [targetField]: true },
     })
-    const currentPoints = totalPointsResult._sum.points || 0
+
+    const currentPoints = totalPointsResult._sum[targetField] || 0
+    const unit = goal.type === "POINTS" ? "pt" : "日"
     const percentage = Math.min(Math.round((currentPoints / goal.targetPoints) * 100), 100)
 
     return (
-      <Link href="/dashboard/community" className="block group">
-        <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-themed hover:border-primary/20">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <Link href="/dashboard/community" className="block group">
+          <div className="transition-all group-hover:scale-[1.001]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -41,13 +56,18 @@ export async function CommunitySummaryCard() {
           </div>
           
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Community Goal</p>
+            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">MISSION</p>
             <p className="text-[10px] font-bold text-foreground">
-              {currentPoints.toLocaleString()} / {goal.targetPoints.toLocaleString()} pt
+              {currentPoints.toLocaleString()} / {goal.targetPoints.toLocaleString()} {unit}
             </p>
           </div>
-        </section>
-      </Link>
+          </div>
+        </Link>
+
+        <div className="mt-3 border-t border-border/70 pt-3">
+          <MissionParticipationQuickAction embedded />
+        </div>
+      </section>
     )
   } catch (error) {
     console.error("Error in CommunitySummaryCard:", error)

@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
+import { markCommunityStreakNoCount } from "@/lib/community-utils"
 import { getCurrentUser } from "@/lib/current-user"
+import { markUserCheckInNoCount } from "@/lib/streak-utils"
 
 function getTargetTimeForDate(
   date: Date,
@@ -152,6 +154,9 @@ export async function POST() {
       longitude: null,
     },
   })
+
+  await markCommunityStreakNoCount(user.id, "CHECKIN", now)
+  await markUserCheckInNoCount(user.id, now)
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({

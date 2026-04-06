@@ -4,8 +4,12 @@ import { getCurrentUser } from "@/lib/current-user"
 
 export async function GET() {
   try {
+    const now = new Date()
     const goal = await prisma.communityGoal.findFirst({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        deadline: { gte: now },
+      },
       orderBy: { createdAt: "desc" },
     })
 

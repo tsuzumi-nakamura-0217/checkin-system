@@ -31,7 +31,7 @@ export default async function DashboardOverviewPage() {
 
   // Update personal login streak
   await updateUserLoginStreak(currentUser.id)
-  
+
   const data = await getOverviewData(currentUser.id)
 
   if (!data) {
@@ -72,7 +72,7 @@ export default async function DashboardOverviewPage() {
       </section>
 
       {/* Community Summary */}
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
         <CommunitySummaryCard />
       </div>
 

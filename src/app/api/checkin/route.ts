@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/current-user"
 import { isWithinLab, getDistanceFromLatLonInM } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
-import { updateUserCheckInStreak } from "@/lib/streak-utils"
+import { markUserCheckInNoCount, updateUserCheckInStreak } from "@/lib/streak-utils"
 
 type CheckInRequestBody = {
   latitude?: unknown
@@ -234,11 +234,19 @@ export async function POST(request: Request) {
   }
   
   // Update streak if active goal is CHECKIN_STREAK
-  const { updateCommunityStreak } = await import("@/lib/community-utils")
-  await updateCommunityStreak(user.id, "CHECKIN")
+  const { markCommunityStreakNoCount, updateCommunityStreak } = await import("@/lib/community-utils")
+  if (lateException) {
+    await markCommunityStreakNoCount(user.id, "CHECKIN", now)
+  } else {
+    await updateCommunityStreak(user.id, "CHECKIN")
+  }
 
-  // Update personal on-time check-in streak
-  await updateUserCheckInStreak(user.id, status)
+  // 事前申告（遅刻）日は連続時間内をノーカウント扱い
+  if (lateException) {
+    await markUserCheckInNoCount(user.id, now)
+  } else {
+    await updateUserCheckInStreak(user.id, status)
+  }
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({

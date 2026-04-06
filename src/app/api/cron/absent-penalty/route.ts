@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { markCommunityStreakNoCount } from '@/lib/community-utils';
 import { prisma } from '@/lib/prisma';
+import { markUserCheckInNoCount } from '@/lib/streak-utils';
 
 export async function GET(request: Request) {
   try {
@@ -66,7 +68,11 @@ export async function GET(request: Request) {
         },
       });
 
-      if (existingException) continue;
+      if (existingException) {
+        await markCommunityStreakNoCount(user.id, "CHECKIN", now);
+        await markUserCheckInNoCount(user.id, now);
+        continue;
+      }
 
       // Check if they have a LATE exception to override their target time
       const lateException = await prisma.exceptionRequest.findFirst({
@@ -132,6 +138,17 @@ export async function GET(request: Request) {
               data: { points: { increment: penaltyPoints } }
             })
           ]);
+
+          // 欠席日は「連続時間内」を途切れとして扱う
+          try {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { checkInStreak: 0 } as any,
+            });
+          } catch (e) {
+            // 互換性のため、カラム未反映環境ではスキップ
+          }
+
           penalizedCount++;
         }
       }

@@ -6,12 +6,16 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const goalId = searchParams.get("goalId")
+    const now = new Date()
 
     let effectiveGoalId = goalId
 
     if (!effectiveGoalId) {
       const activeGoal = await prisma.communityGoal.findFirst({
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          deadline: { gte: now },
+        },
         select: { id: true }
       })
       effectiveGoalId = activeGoal?.id || null
@@ -72,9 +76,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 })
     }
 
+    const now = new Date()
     // Get active goal
     const activeGoal = await prisma.communityGoal.findFirst({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        deadline: { gte: now },
+      },
       select: { id: true }
     })
 

@@ -33,7 +33,7 @@ export function GoalProgress({ title, currentPoints, targetPoints, deadline, isH
             {title}
           </CardTitle>
           <div className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary uppercase tracking-wider">
-            Community Goal
+            MISSION
           </div>
         </div>
       </CardHeader>

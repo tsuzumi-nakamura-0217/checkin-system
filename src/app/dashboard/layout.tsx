@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { DashboardNavDesktop, DashboardNavMobile } from "@/components/dashboard-nav"
 import { LogoutButton } from "@/components/logout-button"
 import { getCurrentUser } from "@/lib/current-user"
+import { updateUserLoginStreak } from "@/lib/streak-utils"
 
 type DashboardLayoutProps = {
   children: React.ReactNode
@@ -23,6 +24,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   if (!currentUser?.id) {
     redirect("/login")
   }
+
+  await updateUserLoginStreak(currentUser.id)
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground selection:bg-primary/20">

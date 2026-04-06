@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { buildCommunityParticipantWhere } from "@/lib/community-participation"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -9,14 +10,33 @@ export async function GET(
     const params = await context.params
     const goalId = params.goalId
 
+    const goalBase = await prisma.communityGoal.findUnique({
+      where: { id: goalId },
+      select: { id: true, type: true },
+    })
+
+    if (!goalBase) {
+      return NextResponse.json({ error: "Goal not found" }, { status: 404 })
+    }
+
+    const targetField =
+      goalBase.type === "LOGIN_STREAK" ? "loginStreak" :
+      goalBase.type === "CHECKIN_STREAK" ? "checkinStreak" :
+      "points"
+
     const goal = await prisma.communityGoal.findUnique({
       where: { id: goalId },
       include: {
         contributions: {
-          where: { points: { gt: 0 } },
-          orderBy: { points: "desc" },
+          where: {
+            ...buildCommunityParticipantWhere(goalId),
+            [targetField]: { gt: 0 },
+          },
+          orderBy: { [targetField]: "desc" },
           select: {
             points: true,
+            loginStreak: true,
+            checkinStreak: true,
             user: {
               select: {
                 id: true,
@@ -37,16 +57,16 @@ export async function GET(
       return NextResponse.json({ error: "Goal not found" }, { status: 404 })
     }
 
-    // Calculate total points for this specific goal
+    // Calculate total value for this specific goal
     const totalPointsResult = await prisma.communityContribution.aggregate({
-      where: { goalId },
-      _sum: { points: true }
+      where: buildCommunityParticipantWhere(goalId),
+      _sum: { [targetField]: true }
     })
-    const totalPoints = totalPointsResult._sum.points || 0
+    const totalPoints = totalPointsResult._sum[targetField] || 0
 
     const formattedLeaderboard = goal.contributions.map(item => ({
       ...item.user,
-      points: item.points
+      points: (item as any)[targetField] || 0
     }))
 
     return NextResponse.json({
