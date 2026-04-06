@@ -23,7 +23,27 @@ type CheckInErrorResponse = {
 
 function getCurrentPosition(): Promise<GeolocationPosition> {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
+    if (!navigator.geolocation) {
+      reject(new Error("このブラウザは位置情報取得に対応していません。"))
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(resolve, (error) => {
+      let message = "位置情報の取得に失敗しました。"
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          message = "位置情報の利用が許可されていません。ブラウザの設定から許可してください。"
+          break
+        case error.POSITION_UNAVAILABLE:
+          message = "位置情報を取得できません。OSの位置情報設定がオンになっているか確認してください。"
+          break
+        case error.TIMEOUT:
+          message = "位置情報の取得がタイムアウトしました。もう一度お試しください。"
+          break
+      }
+      reject(new Error(message))
+    }, {
       enableHighAccuracy: true,
       timeout: 10000,
       maximumAge: 0,
@@ -55,12 +75,6 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
 
   const handleClick = async () => {
     if (checkedIn || isSubmitting) return
-
-    if (!("geolocation" in navigator)) {
-      setIsError(true)
-      setMessage("このブラウザは位置情報取得に対応していません。")
-      return
-    }
 
     setIsSubmitting(true)
     setMessage(null)
