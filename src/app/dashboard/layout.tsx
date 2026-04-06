@@ -11,6 +11,7 @@ type DashboardLayoutProps = {
 
 const navLinks = [
   { href: "/dashboard/overview", label: "ダッシュボード", icon: "dashboard" },
+  { href: "/dashboard/community", label: "コミュニティ", icon: "community" },
   { href: "/dashboard/week", label: "カレンダー", icon: "calendar" },
   { href: "/dashboard/history", label: "履歴", icon: "history" },
   { href: "/dashboard/settings", label: "設定", icon: "settings" },

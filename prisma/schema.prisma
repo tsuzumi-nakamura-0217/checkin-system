@@ -38,6 +38,9 @@ model User {
   checkIns   CheckIn[]
   tasks      Task[]
   exceptions ExceptionRequest[]
+  communityComments CommunityComment[]
+  communityContributions CommunityContribution[]
+  communityCommentReads CommunityCommentRead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -124,4 +127,61 @@ model ExceptionRequest {
   status        String   @default("APPROVED")
 
   createdAt DateTime @default(now())
+}
+
+model CommunityGoal {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  targetPoints Int
+  deadline     DateTime
+  type         String   @default("POINTS") // "POINTS", "LOGIN_STREAK", "CHECKIN_STREAK"
+  isActive     Boolean  @default(true)
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  comments      CommunityComment[]
+  contributions CommunityContribution[]
+}
+
+model CommunityComment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId    String?
+  goal      CommunityGoal? @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  
+  readReceipts CommunityCommentRead[]
+}
+
+model CommunityCommentRead {
+  id        String   @id @default(cuid())
+  commentId String
+  comment   CommunityComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+}
+
+model CommunityContribution {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId    String
+  goal      CommunityGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  points    Int      @default(0)
+  
+  loginStreak      Int       @default(0)
+  lastLoginDate    DateTime?
+  checkinStreak    Int       @default(0)
+  lastCheckinDate  DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, goalId])
 }

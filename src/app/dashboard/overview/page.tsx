@@ -5,6 +5,7 @@ import { CheckInButton } from "@/components/check-in-button"
 import { CheckOutButton } from "@/components/check-out-button"
 import { formatPoint, getCheckInStatusLabel, getOverviewData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
+import { CommunitySummaryCard } from "@/components/community/summary-card"
 
 function getGreeting(): string {
   const hourText = new Intl.DateTimeFormat("ja-JP", {
@@ -65,6 +66,11 @@ export default async function DashboardOverviewPage() {
           </div>
         </div>
       </section>
+
+      {/* Community Summary */}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+        <CommunitySummaryCard />
+      </div>
 
       {/* Stats Grid */}
       <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">

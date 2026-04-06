@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
 import { calculateTaskCompletionPoints } from "@/lib/point-calculator"
+import { incrementCommunityContribution } from "@/lib/community-utils"
 
 type UpdateTaskStatusRequestBody = {
   status?: unknown
@@ -64,8 +65,8 @@ export async function PATCH(
     })
 
     revalidatePath("/dashboard", "layout")
-  return NextResponse.json({
-    success: true,
+    return NextResponse.json({
+      success: true,
       task: {
         id: task.id,
         status: task.status,
@@ -105,9 +106,12 @@ export async function PATCH(
       }),
     ])
 
+    // Update community goal contribution
+    await incrementCommunityContribution(task.userId, points)
+
     revalidatePath("/dashboard", "layout")
-  return NextResponse.json({
-    success: true,
+    return NextResponse.json({
+      success: true,
       task: updatedTask,
       totalPoints: updatedUser.points,
     })
@@ -142,6 +146,9 @@ export async function PATCH(
       },
     }),
   ])
+
+  // Revert community goal contribution
+  await incrementCommunityContribution(task.userId, -pointsToRevert)
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
 import { isWithinLab, getDistanceFromLatLonInM } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
+import { incrementCommunityContribution } from "@/lib/community-utils"
 
 type CheckInRequestBody = {
   latitude?: unknown
@@ -225,6 +226,15 @@ export async function POST(request: Request) {
       },
     }),
   ])
+
+  // Update community goal contribution
+  if (points > 0) {
+    await incrementCommunityContribution(user.id, points)
+  }
+  
+  // Update streak if active goal is CHECKIN_STREAK
+  const { updateCommunityStreak } = await import("@/lib/community-utils")
+  await updateCommunityStreak(user.id, "CHECKIN")
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
