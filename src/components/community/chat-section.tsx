@@ -41,7 +41,7 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
       const url = goalId
         ? `/api/community/comments?goalId=${goalId}`
         : "/api/community/comments"
-      const res = await fetch(url)
+      const res = await fetch(url, { cache: "no-store" })
       if (res.ok) {
         const data = await res.json()
         setComments(data)
@@ -116,6 +116,10 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim() || isLoading) return
+    if (!goalId) {
+      toast.error("アクティブなミッションが見つかりません")
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -126,8 +130,8 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
       })
 
       if (res.ok) {
-        const comment = await res.json()
-        setComments((prev) => [comment, ...prev])
+        await res.json()
+        await fetchComments()
         setNewComment("")
         toast.success("コメントを投稿しました")
       } else {

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
 import { getStartOfTodayJst } from "@/lib/community-goal"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -59,7 +61,13 @@ export async function GET(req: NextRequest) {
       _count: undefined
     }))
 
-    return NextResponse.json(formattedComments)
+    return NextResponse.json(formattedComments, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    })
   } catch (error) {
     console.error("Error fetching community comments:", error)
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
@@ -79,22 +87,21 @@ export async function POST(req: NextRequest) {
     }
 
     const activeDeadlineMin = getStartOfTodayJst()
-    let effectiveGoalId: string | null = goalId ?? null
 
-    if (!effectiveGoalId) {
-      const activeGoal = await prisma.communityGoal.findFirst({
-        where: {
-          isActive: true,
-          deadline: { gte: activeDeadlineMin },
-        },
-        orderBy: { createdAt: "desc" },
-        select: { id: true }
-      })
-
-      effectiveGoalId = activeGoal?.id ?? null
+    if (!goalId) {
+      return NextResponse.json({ error: "goalId is required" }, { status: 400 })
     }
 
-    if (!effectiveGoalId) {
+    const goal = await prisma.communityGoal.findFirst({
+      where: {
+        id: goalId,
+        isActive: true,
+        deadline: { gte: activeDeadlineMin },
+      },
+      select: { id: true },
+    })
+
+    if (!goal) {
       return NextResponse.json({ error: "Active goal not found" }, { status: 400 })
     }
 
@@ -102,7 +109,7 @@ export async function POST(req: NextRequest) {
       data: {
         content,
         userId: user.id,
-        goalId: effectiveGoalId,
+        goalId: goal.id,
       },
       include: {
         user: {
