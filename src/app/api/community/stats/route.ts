@@ -5,17 +5,18 @@ import {
 } from "@/lib/community-participation"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
+import { getStartOfTodayJst } from "@/lib/community-goal"
 
 export async function GET() {
   try {
     const user = await getCurrentUser()
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
 
     // Get active goal first
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
     })
 

@@ -18,7 +18,7 @@ interface Comment {
     id: string
     name: string | null
     image: string | null
-  }
+  } | null
   readCount: number
   isReadByMe: boolean
 }
@@ -55,7 +55,7 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
 
         // Mark unread messages as read
         const unreadIds = data
-          .filter((c: Comment) => !c.isReadByMe && c.user.id !== currentUserId)
+          .filter((c: Comment) => !c.isReadByMe && c.user?.id !== currentUserId)
           .map((c: Comment) => c.id)
 
         if (unreadIds.length > 0 && !readOnly) {
@@ -157,13 +157,13 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
       <CardContent className="flex-1 overflow-y-auto px-4 py-0 space-y-4 scroll-smooth" ref={scrollRef}>
         <div className="flex flex-col-reverse gap-4 pb-4">
           {comments.map((comment) => {
-            const isMine = comment.user.id === currentUserId
+            const isMine = comment.user?.id === currentUserId
             const showReadCount = isMine && comment.readCount > 0
 
             return (
               <div key={comment.id} className={cn("flex items-start gap-3 group", isMine && "flex-row-reverse")}>
                 <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-primary/10">
-                  {comment.user.image ? (
+                  {comment.user?.image ? (
                     <Image src={comment.user.image} alt="User" fill className="object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary">
@@ -175,7 +175,7 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
                 </div>
                 <div className={cn("min-w-0 flex-1", isMine && "flex flex-col items-end")}>
                   <div className={cn("flex items-baseline gap-2", isMine && "flex-row-reverse")}>
-                    <p className="text-sm font-bold text-foreground truncate">{comment.user.name || "Anonymous"}</p>
+                    <p className="text-sm font-bold text-foreground truncate">{comment.user?.name || "Anonymous"}</p>
                     <p className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest shrink-0">
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ja })}
                     </p>

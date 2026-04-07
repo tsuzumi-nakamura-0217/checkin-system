@@ -2,14 +2,15 @@ import Link from "next/link"
 import { buildCommunityParticipantWhere } from "@/lib/community-participation"
 import { prisma } from "@/lib/prisma"
 import { MissionParticipationQuickAction } from "@/components/community/mission-participation-quick-action"
+import { getStartOfTodayJst } from "@/lib/community-goal"
 
 export async function CommunitySummaryCard() {
   try {
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     const goal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       orderBy: { createdAt: "desc" },
     })

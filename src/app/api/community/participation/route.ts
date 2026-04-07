@@ -6,6 +6,7 @@ import {
   isCommunityJoinedContribution,
 } from "@/lib/community-participation"
 import { prisma } from "@/lib/prisma"
+import { getStartOfTodayJst } from "@/lib/community-goal"
 
 export async function GET() {
   try {
@@ -14,11 +15,11 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true, type: true, title: true },
     })
@@ -62,11 +63,11 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true, type: true },
     })
@@ -140,11 +141,11 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true },
     })

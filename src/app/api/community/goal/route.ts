@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
+import { getStartOfTodayJst, parseDateInputAsEndOfDayJst } from "@/lib/community-goal"
 
 export async function GET() {
   try {
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     const goal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       orderBy: { createdAt: "desc" },
     })
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
         title,
         description,
         targetPoints: parseInt(targetPoints),
-        deadline: new Date(deadline),
+        deadline: parseDateInputAsEndOfDayJst(deadline),
         type: goalType,
         isActive: true,
       },

@@ -1,16 +1,17 @@
 import { prisma } from "./prisma"
 import { isCommunityJoinedContribution } from "./community-participation"
+import { getStartOfTodayJst } from "./community-goal"
 
 const JST_OFFSET = 9 * 60 * 60 * 1000
 
 export async function incrementCommunityContribution(userId: string, points: number) {
   try {
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     // Find active goal
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true, type: true }
     })
@@ -55,13 +56,14 @@ export async function updateCommunityStreak(userId: string, type: "LOGIN" | "CHE
   try {
     const goalType = type === "LOGIN" ? "LOGIN_STREAK" : "CHECKIN_STREAK"
     const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst(now)
     
     // Find active goal of the correct type
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
         type: goalType,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true, createdAt: true }
     })
@@ -137,13 +139,13 @@ export async function markCommunityStreakNoCount(
 ) {
   try {
     const goalType = type === "LOGIN" ? "LOGIN_STREAK" : "CHECKIN_STREAK"
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst(baseDate)
 
     const activeGoal = await prisma.communityGoal.findFirst({
       where: {
         isActive: true,
         type: goalType,
-        deadline: { gte: now },
+        deadline: { gte: activeDeadlineMin },
       },
       select: { id: true },
     })

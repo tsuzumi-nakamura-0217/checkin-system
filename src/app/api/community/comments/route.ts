@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
+import { getStartOfTodayJst } from "@/lib/community-goal"
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const goalId = searchParams.get("goalId")
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
 
     let effectiveGoalId = goalId
 
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
       const activeGoal = await prisma.communityGoal.findFirst({
         where: {
           isActive: true,
-          deadline: { gte: now },
+          deadline: { gte: activeDeadlineMin },
         },
         orderBy: { createdAt: "desc" },
         select: { id: true }
@@ -77,14 +78,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 })
     }
 
-    const now = new Date()
+    const activeDeadlineMin = getStartOfTodayJst()
     let effectiveGoalId: string | null = goalId ?? null
 
     if (!effectiveGoalId) {
       const activeGoal = await prisma.communityGoal.findFirst({
         where: {
           isActive: true,
-          deadline: { gte: now },
+          deadline: { gte: activeDeadlineMin },
         },
         orderBy: { createdAt: "desc" },
         select: { id: true }
