@@ -44,7 +44,7 @@ export function buildMorningReportText({
 
   return [
     `【朝日報：${dateStr}】`,
-    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}`,
+    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}🏠`,
     `✅ タスク: ${taskCount}個`,
     `⏱️ タスク合計時間: ${totalHours}h`,
   ].join("\n")
@@ -64,8 +64,8 @@ export function buildEveningReportText({
 
   return [
     `【夜日報：${dateStr}】`,
-    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}`,
-    `🚪 退勤時刻: ${checkedOutTimeLabel ?? ""}`,
+    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}🏠`,
+    `🚪 退勤時刻: ${checkedOutTimeLabel ?? ""}🏠`,
     `📊 タスク完了率: ${completionRate}%(${doneCount}/${totalCount}個)`,
   ].join("\n")
 }
