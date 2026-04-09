@@ -8,6 +8,7 @@ type BuildMorningReportOptions = {
   date: Date
   tasks: TaskSummaryItem[]
   checkedInTimeLabel: string | null
+  isRemote?: boolean
 }
 
 type BuildEveningReportOptions = {
@@ -15,6 +16,7 @@ type BuildEveningReportOptions = {
   tasks: TaskSummaryItem[]
   checkedInTimeLabel: string | null
   checkedOutTimeLabel: string | null
+  isRemote?: boolean
 }
 
 function formatReportDate(date: Date): string {
@@ -31,6 +33,7 @@ export function buildMorningReportText({
   date,
   tasks,
   checkedInTimeLabel,
+  isRemote,
 }: BuildMorningReportOptions): string {
   const dateStr = formatReportDate(date)
 
@@ -44,7 +47,7 @@ export function buildMorningReportText({
 
   return [
     `【☀️ 朝日報：${dateStr}】`,
-    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}🏠`,
+    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}${isRemote ? "🏠" : ""}`,
     `✅ タスク: ${taskCount}個`,
     `⏱️ タスク合計時間: ${totalHours}h`,
   ].join("\n")
@@ -55,6 +58,7 @@ export function buildEveningReportText({
   tasks,
   checkedInTimeLabel,
   checkedOutTimeLabel,
+  isRemote,
 }: BuildEveningReportOptions): string {
   const dateStr = formatReportDate(date)
 
@@ -64,8 +68,8 @@ export function buildEveningReportText({
 
   return [
     `【🌙 夜日報：${dateStr}】`,
-    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}🏠`,
-    `🚪 退勤時刻: ${checkedOutTimeLabel ?? ""}🏠`,
+    `⏰ チェックイン時刻: ${checkedInTimeLabel ?? ""}${isRemote ? "🏠" : ""}`,
+    `🚪 退勤時刻: ${checkedOutTimeLabel ?? ""}${isRemote ? "🏠" : ""}`,
     `📊 タスク完了率: ${completionRate}%(${doneCount}/${totalCount}個)`,
   ].join("\n")
 }

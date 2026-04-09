@@ -95,6 +95,7 @@ export type DashboardData = {
   checkInStreak: number
   maxLoginStreak: number
   maxCheckInStreak: number
+  isRemoteCheckIn?: boolean
 }
 
 export function formatPoint(points: number) {
@@ -273,6 +274,7 @@ export async function getOverviewData(userId: string) {
     checkInStreak: (user as any)?.checkInStreak ?? 0,
     maxLoginStreak: (user as any)?.maxLoginStreak ?? 0,
     maxCheckInStreak: (user as any)?.maxCheckInStreak ?? 0,
+    isRemoteCheckIn: todayCheckIn?.status === "REMOTE",
   }
 }
 
@@ -322,7 +324,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     prisma.checkIn.findFirst({
       where: { userId, time: { gte: dayStart, lt: nextDayStart } },
       orderBy: { time: "desc" },
-      select: { time: true },
+      select: { time: true, status: true },
     }),
   ])
 
@@ -353,6 +355,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     weeklyCheckInPoints: weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0),
     weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0),
     checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
+    isRemoteCheckIn: todayCheckIn?.status === "REMOTE",
   }
 }
 
@@ -393,5 +396,6 @@ export async function getDashboardData(userId: string, weekParam?: string | stri
     checkInStreak: overview.checkInStreak,
     maxLoginStreak: overview.maxLoginStreak,
     maxCheckInStreak: overview.maxCheckInStreak,
+    isRemoteCheckIn: overview.isRemoteCheckIn,
   }
 }

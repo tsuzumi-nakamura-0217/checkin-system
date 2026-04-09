@@ -13,9 +13,10 @@ type TodayTaskReportItem = {
 type TodayTaskReportButtonProps = {
   todayTasks: TodayTaskReportItem[]
   checkedInTimeLabel: string | null
+  isRemote?: boolean
 }
 
-export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel }: TodayTaskReportButtonProps) {
+export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel, isRemote }: TodayTaskReportButtonProps) {
   const feedbackTimerRef = useRef<number | null>(null)
   const [feedback, setFeedback] = useState<"success" | "error" | null>(null)
 
@@ -36,6 +37,7 @@ export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel }: TodayT
         estimatedHours: task.estimatedHours,
       })),
       checkedInTimeLabel,
+      isRemote,
     })
 
     try {
@@ -53,7 +55,7 @@ export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel }: TodayT
       setFeedback(null)
       feedbackTimerRef.current = null
     }, 2400)
-  }, [todayTasks, checkedInTimeLabel])
+  }, [todayTasks, checkedInTimeLabel, isRemote])
 
   return (
     <div className="flex items-center gap-2">

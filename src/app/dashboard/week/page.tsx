@@ -64,7 +64,7 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
                 </svg>
               </Link>
             </div>
-            <TodayTaskReportButton todayTasks={data.todayTasks} checkedInTimeLabel={data.checkedInTimeLabel} />
+            <TodayTaskReportButton todayTasks={data.todayTasks} checkedInTimeLabel={data.checkedInTimeLabel} isRemote={data.isRemoteCheckIn} />
           </div>
         </div>
       </div>

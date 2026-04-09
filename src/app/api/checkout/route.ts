@@ -124,6 +124,7 @@ export async function POST() {
     tasks: todayTasks,
     checkedInTimeLabel,
     checkedOutTimeLabel,
+    isRemote: todayCheckIn.status === "REMOTE",
   })
 
   revalidatePath("/dashboard", "layout")
