@@ -248,6 +248,33 @@ export async function POST(request: Request) {
     await updateUserCheckInStreak(user.id, status)
   }
 
+  // Generate morning report text
+  const todayTasks = await prisma.task.findMany({
+    where: {
+      userId: user.id,
+      startAt: {
+        gte: dayStart,
+        lt: nextDayStart,
+      },
+    },
+    orderBy: [{ startAt: "asc" }, { createdAt: "asc" }],
+    select: { title: true, status: true, estimatedHours: true },
+  })
+
+  const checkedInTimeLabel = new Intl.DateTimeFormat("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo",
+  }).format(now)
+
+  const { buildMorningReportText } = await import("@/lib/task-summary")
+  const taskSummaryText = buildMorningReportText({
+    date: now,
+    tasks: todayTasks,
+    checkedInTimeLabel,
+    isRemote: status === "REMOTE",
+  })
+
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
@@ -256,5 +283,6 @@ export async function POST(request: Request) {
     totalPoints: updatedUser.points,
     targetTime,
     checkedInAt: now,
+    taskSummaryText,
   })
 }

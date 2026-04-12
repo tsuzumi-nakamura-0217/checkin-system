@@ -73,12 +73,27 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
   const [isError, setIsError] = useState(false)
   const [showRemoteConfirm, setShowRemoteConfirm] = useState(false)
 
+  const copySummaryToClipboard = async (summaryText: string): Promise<boolean> => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(summaryText)
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  const [reportTextToCopy, setReportTextToCopy] = useState<string | null>(null)
+
   const handleClick = async () => {
     if (checkedIn || isSubmitting) return
 
     setIsSubmitting(true)
     setMessage(null)
     setIsError(false)
+    setReportTextToCopy(null)
 
     try {
       const position = await getCurrentPosition()
@@ -101,8 +116,12 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
         throw new Error(errorMessage)
       }
 
+      const copied = await copySummaryToClipboard(data.taskSummaryText)
+      setReportTextToCopy(data.taskSummaryText)
+
       setMessage(
-        `チェックイン完了: ${toStatusLabel(data.status)} (${toPointLabel(data.pointsEarned)}pt)`
+        `チェックイン完了: ${toStatusLabel(data.status)} (${toPointLabel(data.pointsEarned)}pt)` +
+        (copied ? "。報告をコピーしました。" : "")
       )
       router.refresh()
     } catch (error) {
@@ -120,6 +139,7 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
     setMessage(null)
     setIsError(false)
     setShowRemoteConfirm(false)
+    setReportTextToCopy(null)
 
     try {
       const response = await fetch("/api/checkin/remote", {
@@ -136,8 +156,11 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
         throw new Error(errorMessage)
       }
 
+      const copied = await copySummaryToClipboard(data.taskSummaryText)
+      setReportTextToCopy(data.taskSummaryText)
+
       setMessage(
-        `在宅勤務チェックイン完了 (0pt)`
+        `在宅勤務チェックイン完了 (0pt)` + (copied ? "。報告をコピーしました。" : "")
       )
       router.refresh()
     } catch (error) {
@@ -230,7 +253,28 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
       )}
 
       {message ? (
-        <p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>
+        <div className="flex flex-col gap-2">
+          <p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>
+          {!isError && reportTextToCopy && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(reportTextToCopy)
+                  setMessage(message.replace("。", "。 ") + "報告をコピーしました。")
+                } catch {
+                  setMessage(message.replace("。", "。 ") + "コピーに失敗しました。")
+                }
+              }}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition-all hover:bg-primary/20 animate-fade-in"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              報告用テキストをコピー
+            </button>
+          )}
+        </div>
       ) : null}
     </div>
   )
