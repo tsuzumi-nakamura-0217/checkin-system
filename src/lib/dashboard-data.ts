@@ -418,7 +418,9 @@ export type TodayUserActivity = {
   checkOutTime: Date | null
   checkInStatus: string | null
   checkInPoints: number
-  tasks: { id: string; title: string; status: string; estimatedHours: number }[]
+  taskCompletionRate: number | null
+  completedTaskCount: number
+  totalTaskCount: number
 }
 
 // Get day-of-week key for target time fields
@@ -529,6 +531,10 @@ export async function getAllUsersRankingAndTodayActivity(): Promise<{
     const tasks = todayTasksMap.get(user.id) ?? []
     const targetTime = (user as Record<string, unknown>)[targetTimeField] as string | null
 
+    const totalTaskCount = tasks.length
+    const completedTaskCount = tasks.filter((t) => t.status === "DONE").length
+    const taskCompletionRate = totalTaskCount > 0 ? Math.round((completedTaskCount / totalTaskCount) * 100) : null
+
     return {
       id: user.id,
       name: user.name,
@@ -538,7 +544,9 @@ export async function getAllUsersRankingAndTodayActivity(): Promise<{
       checkOutTime: ci?.checkOutTime ?? null,
       checkInStatus: ci?.status ?? null,
       checkInPoints: ci?.pointsEarned ?? 0,
-      tasks: tasks.map((t) => ({ id: t.id, title: t.title, status: t.status, estimatedHours: t.estimatedHours })),
+      taskCompletionRate,
+      completedTaskCount,
+      totalTaskCount,
     }
   })
 

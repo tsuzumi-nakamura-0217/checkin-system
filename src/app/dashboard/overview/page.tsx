@@ -386,23 +386,22 @@ export default async function DashboardOverviewPage() {
                   )}
                 </div>
 
-                {/* Tasks */}
-                {user.tasks.length > 0 && (
+                {/* Task Completion Rate */}
+                {user.totalTaskCount > 0 && user.taskCompletionRate !== null && (
                   <div className="mt-3 border-t border-border/50 pt-3">
-                    <p className="text-[10px] font-bold tracking-[0.14em] text-muted-foreground/60 uppercase mb-2">タスク</p>
-                    <div className="space-y-1.5">
-                      {user.tasks.map((task) => {
-                        const taskStatus = getTaskStatusIcon(task.status)
-                        return (
-                          <div key={task.id} className="flex items-center gap-2">
-                            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${taskStatus.className}`}>
-                              {taskStatus.icon}
-                            </span>
-                            <span className="text-xs text-foreground truncate flex-1">{task.title}</span>
-                            <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">{task.estimatedHours}h</span>
-                          </div>
-                        )
-                      })}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[10px] font-bold tracking-[0.14em] text-muted-foreground/60 uppercase">タスク完了率</p>
+                      <p className="text-[10px] font-bold text-foreground tabular-nums">
+                        {user.completedTaskCount} / {user.totalTaskCount} ({user.taskCompletionRate}%)
+                      </p>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          user.taskCompletionRate === 100 ? "bg-accent" : "bg-primary/60"
+                        }`}
+                        style={{ width: `${user.taskCompletionRate}%` }}
+                      />
                     </div>
                   </div>
                 )}
