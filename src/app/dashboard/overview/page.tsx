@@ -3,10 +3,11 @@ import { redirect } from "next/navigation"
 import { AdvanceNoticeButton } from "@/components/advance-notice-button"
 import { CheckInButton } from "@/components/check-in-button"
 import { CheckOutButton } from "@/components/check-out-button"
-import { formatPoint, getCheckInStatusLabel, getOverviewData } from "@/lib/dashboard-data"
+import { formatPoint, getCheckInStatusLabel, getOverviewData, getAllUsersRankingAndTodayActivity } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { CommunitySummaryCard } from "@/components/community/summary-card"
 import { updateUserLoginStreak } from "@/lib/streak-utils"
+import { formatTimeLabel } from "@/lib/calendar-utils"
 
 function getGreeting(): string {
   const hourText = new Intl.DateTimeFormat("ja-JP", {
@@ -22,6 +23,27 @@ function getGreeting(): string {
   return "お疲れさまです 🌙"
 }
 
+function getRankBadge(rank: number) {
+  if (rank === 1) return { emoji: "🥇", color: "text-yellow-500", bg: "bg-yellow-500/10", border: "border-yellow-500/20" }
+  if (rank === 2) return { emoji: "🥈", color: "text-gray-400", bg: "bg-gray-400/10", border: "border-gray-400/20" }
+  if (rank === 3) return { emoji: "🥉", color: "text-orange-400", bg: "bg-orange-400/10", border: "border-orange-400/20" }
+  return { emoji: `${rank}`, color: "text-muted-foreground", bg: "bg-muted/50", border: "border-border" }
+}
+
+function getStatusBadge(status: string | null) {
+  if (status === "ON_TIME") return { label: "時間内", className: "bg-accent/10 text-accent border-accent/20" }
+  if (status === "EARLY") return { label: "早着", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" }
+  if (status === "LATE") return { label: "遅刻", className: "bg-destructive/10 text-destructive border-destructive/20" }
+  if (status === "REMOTE") return { label: "在宅", className: "bg-purple-500/10 text-purple-500 border-purple-500/20" }
+  return { label: "未チェックイン", className: "bg-muted text-muted-foreground border-border" }
+}
+
+function getTaskStatusIcon(status: string) {
+  if (status === "DONE") return { icon: "✓", className: "text-accent bg-accent/10" }
+  if (status === "IN_PROGRESS") return { icon: "▶", className: "text-blue-500 bg-blue-500/10" }
+  return { icon: "○", className: "text-muted-foreground bg-muted" }
+}
+
 export default async function DashboardOverviewPage() {
   const currentUser = await getCurrentUser()
 
@@ -32,7 +54,10 @@ export default async function DashboardOverviewPage() {
   // Update personal login streak
   await updateUserLoginStreak(currentUser.id)
 
-  const data = await getOverviewData(currentUser.id)
+  const [data, { ranking, todayActivity }] = await Promise.all([
+    getOverviewData(currentUser.id),
+    getAllUsersRankingAndTodayActivity(),
+  ])
 
   if (!data) {
     redirect("/login")
@@ -228,38 +253,167 @@ export default async function DashboardOverviewPage() {
           </div>
         </section>
 
+        {/* Points Ranking - replaces 今日のメモ */}
         <section className="rounded-2xl border border-border bg-card p-6 shadow-themed sm:p-7">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
             </div>
-            <p className="text-base font-bold text-foreground">今日のメモ</p>
+            <p className="text-base font-bold text-foreground">ポイントランキング</p>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            事前申告は翌日分のみ受け付けます。遅刻・欠席が見込まれる場合は、当日になる前に登録してください。
-          </p>
 
-          <div className="mt-5 rounded-xl border border-border bg-background/60 p-4">
-            <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">現在の状態</p>
-            <ul className="mt-3 space-y-2.5 text-sm text-foreground">
-              <li className="flex items-center gap-2.5">
-                <span className={`h-2 w-2 rounded-full ${data.todayCheckIn ? "bg-accent" : "bg-muted-foreground/30"}`} />
-                チェックイン: {data.todayCheckIn ? "完了" : "未記録"}
-              </li>
-              <li className="flex items-center gap-2.5">
-                <span className={`h-2 w-2 rounded-full ${data.todayCheckIn?.checkOutTime ? "bg-accent" : "bg-muted-foreground/30"}`} />
-                退勤: {data.todayCheckIn?.checkOutTime ? "完了" : "未記録"}
-              </li>
-              <li className="flex items-center gap-2.5">
-                <span className={`h-2 w-2 rounded-full ${data.todayPointLabel ? "bg-primary" : "bg-muted-foreground/30"}`} />
-                本日のポイント: {data.todayPointLabel ? `${data.todayPointLabel} pt` : "未確定"}
-              </li>
-            </ul>
+          <div className="mt-4 space-y-2 max-h-[340px] overflow-y-auto pr-1">
+            {ranking.map((user) => {
+              const badge = getRankBadge(user.rank)
+              const isCurrentUser = user.id === currentUser.id
+              return (
+                <div
+                  key={user.id}
+                  className={`flex items-center gap-3 rounded-xl border p-3 transition-all ${
+                    isCurrentUser
+                      ? "border-primary/30 bg-primary/5 shadow-sm"
+                      : `${badge.border} bg-background/60 hover:bg-background/80`
+                  }`}
+                >
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${badge.bg} ${badge.color}`}>
+                    {user.rank <= 3 ? badge.emoji : user.rank}
+                  </div>
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name ?? ""}
+                      className="h-8 w-8 shrink-0 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground border border-border">
+                      {(user.name ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
+                      {user.name ?? "名前未設定"}
+                      {isCurrentUser && <span className="ml-1.5 text-[10px] font-bold text-primary/60">(あなた)</span>}
+                    </p>
+                  </div>
+                  <p className="text-sm font-bold tabular-nums text-foreground">
+                    {user.totalPoints.toLocaleString("ja-JP")}
+                    <span className="ml-0.5 text-[10px] font-semibold text-muted-foreground">pt</span>
+                  </p>
+                </div>
+              )
+            })}
+            {ranking.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">ユーザーが見つかりません</p>
+            )}
           </div>
         </section>
       </div>
+
+      {/* Today's Activity for All Users */}
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-themed sm:p-7 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chart-4/10 text-chart-4">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-base font-bold text-foreground">本日のみんなの活動</p>
+            <p className="text-[10px] font-medium text-muted-foreground">チェックイン状況・目標時間・タスク</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {todayActivity.map((user) => {
+            const statusBadge = getStatusBadge(user.checkInStatus)
+            const isCurrentUser = user.id === currentUser.id
+            return (
+              <div
+                key={user.id}
+                className={`rounded-xl border p-4 transition-all ${
+                  isCurrentUser
+                    ? "border-primary/25 bg-primary/[0.03]"
+                    : "border-border bg-background/60 hover:bg-background/80"
+                }`}
+              >
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* User Avatar */}
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name ?? ""}
+                      className="h-9 w-9 shrink-0 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground border border-border">
+                      {(user.name ?? "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
+                  {/* User Name & Target */}
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate ${isCurrentUser ? "text-primary" : "text-foreground"}`}>
+                      {user.name ?? "名前未設定"}
+                      {isCurrentUser && <span className="ml-1.5 text-[10px] font-bold text-primary/60">(あなた)</span>}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      目標: {user.targetTime ?? "09:00"}
+                      {user.checkInTime && (
+                        <span className="ml-2">
+                          → チェックイン: {formatTimeLabel(user.checkInTime)}
+                        </span>
+                      )}
+                      {user.checkOutTime && (
+                        <span className="ml-2">
+                          · 退勤: {formatTimeLabel(user.checkOutTime)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Status Badge */}
+                  <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${statusBadge.className}`}>
+                    {statusBadge.label}
+                  </span>
+
+                  {/* Points */}
+                  {user.checkInPoints !== 0 && (
+                    <span className={`text-xs font-bold tabular-nums ${user.checkInPoints > 0 ? "text-accent" : "text-destructive"}`}>
+                      {user.checkInPoints > 0 ? "+" : ""}{user.checkInPoints} pt
+                    </span>
+                  )}
+                </div>
+
+                {/* Tasks */}
+                {user.tasks.length > 0 && (
+                  <div className="mt-3 border-t border-border/50 pt-3">
+                    <p className="text-[10px] font-bold tracking-[0.14em] text-muted-foreground/60 uppercase mb-2">タスク</p>
+                    <div className="space-y-1.5">
+                      {user.tasks.map((task) => {
+                        const taskStatus = getTaskStatusIcon(task.status)
+                        return (
+                          <div key={task.id} className="flex items-center gap-2">
+                            <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${taskStatus.className}`}>
+                              {taskStatus.icon}
+                            </span>
+                            <span className="text-xs text-foreground truncate flex-1">{task.title}</span>
+                            <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">{task.estimatedHours}h</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {todayActivity.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">本日のデータがまだありません</p>
+          )}
+        </div>
+      </section>
     </section>
   )
 }

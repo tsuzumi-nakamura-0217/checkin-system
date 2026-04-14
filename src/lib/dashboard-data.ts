@@ -399,3 +399,148 @@ export async function getDashboardData(userId: string, weekParam?: string | stri
     isRemoteCheckIn: overview.isRemoteCheckIn,
   }
 }
+
+// Types for ranking and today's activity
+export type RankedUser = {
+  id: string
+  name: string | null
+  image: string | null
+  totalPoints: number
+  rank: number
+}
+
+export type TodayUserActivity = {
+  id: string
+  name: string | null
+  image: string | null
+  targetTime: string | null
+  checkInTime: Date | null
+  checkOutTime: Date | null
+  checkInStatus: string | null
+  checkInPoints: number
+  tasks: { id: string; title: string; status: string; estimatedHours: number }[]
+}
+
+// Get day-of-week key for target time fields
+function getDayTargetTimeKey(): string {
+  const now = new Date()
+  const jstOffset = 9 * 60 * 60 * 1000
+  const nowJST = new Date(now.getTime() + jstOffset)
+  const day = nowJST.getUTCDay()
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  return dayNames[day]
+}
+
+export async function getAllUsersRankingAndTodayActivity(): Promise<{
+  ranking: RankedUser[]
+  todayActivity: TodayUserActivity[]
+}> {
+  const { dayStart, nextDayStart } = getTodayBoundaries()
+  const dayKey = getDayTargetTimeKey()
+  const targetTimeField = `targetTime${dayKey}` as const
+
+  // Get all users with their points data
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      targetTimeMon: true,
+      targetTimeTue: true,
+      targetTimeWed: true,
+      targetTimeThu: true,
+      targetTimeFri: true,
+      targetTimeSat: true,
+      targetTimeSun: true,
+    },
+  })
+
+  // Get all check-in points and task points for all users in parallel
+  const [allCheckInPoints, allDoneTaskPoints, todayCheckIns, todayTasks] = await Promise.all([
+    prisma.checkIn.groupBy({
+      by: ["userId"],
+      _sum: { pointsEarned: true },
+    }),
+    prisma.task.findMany({
+      where: { status: "DONE" },
+      select: { userId: true, pointsEarned: true, estimatedHours: true },
+    }),
+    prisma.checkIn.findMany({
+      where: { time: { gte: dayStart, lt: nextDayStart } },
+      orderBy: { time: "desc" },
+      select: { userId: true, time: true, checkOutTime: true, pointsEarned: true, status: true, targetTime: true },
+    }),
+    prisma.task.findMany({
+      where: {
+        OR: [
+          { startAt: { gte: dayStart, lt: nextDayStart } },
+          { type: "DAILY" },
+        ],
+      },
+      select: { id: true, userId: true, title: true, status: true, estimatedHours: true, startAt: true, type: true },
+    }),
+  ])
+
+  // Build check-in points map
+  const checkInPointsMap = new Map<string, number>()
+  for (const item of allCheckInPoints) {
+    checkInPointsMap.set(item.userId, item._sum.pointsEarned ?? 0)
+  }
+
+  // Build task points map
+  const taskPointsMap = new Map<string, number>()
+  for (const item of allDoneTaskPoints) {
+    const pts = item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)
+    taskPointsMap.set(item.userId, (taskPointsMap.get(item.userId) ?? 0) + pts)
+  }
+
+  // Build today's check-in map (first per user since ordered desc)
+  const todayCheckInMap = new Map<string, typeof todayCheckIns[0]>()
+  for (const ci of todayCheckIns) {
+    if (!todayCheckInMap.has(ci.userId)) {
+      todayCheckInMap.set(ci.userId, ci)
+    }
+  }
+
+  // Build today's tasks map
+  const todayTasksMap = new Map<string, typeof todayTasks>()
+  for (const task of todayTasks) {
+    if (!todayTasksMap.has(task.userId)) {
+      todayTasksMap.set(task.userId, [])
+    }
+    todayTasksMap.get(task.userId)!.push(task)
+  }
+
+  // Build ranking
+  const rankedUsers: RankedUser[] = users
+    .map((user) => ({
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      totalPoints: (checkInPointsMap.get(user.id) ?? 0) + (taskPointsMap.get(user.id) ?? 0),
+      rank: 0,
+    }))
+    .sort((a, b) => b.totalPoints - a.totalPoints)
+    .map((user, index) => ({ ...user, rank: index + 1 }))
+
+  // Build today's activity
+  const todayActivity: TodayUserActivity[] = users.map((user) => {
+    const ci = todayCheckInMap.get(user.id)
+    const tasks = todayTasksMap.get(user.id) ?? []
+    const targetTime = (user as Record<string, unknown>)[targetTimeField] as string | null
+
+    return {
+      id: user.id,
+      name: user.name,
+      image: user.image,
+      targetTime: targetTime ?? "09:00",
+      checkInTime: ci?.time ?? null,
+      checkOutTime: ci?.checkOutTime ?? null,
+      checkInStatus: ci?.status ?? null,
+      checkInPoints: ci?.pointsEarned ?? 0,
+      tasks: tasks.map((t) => ({ id: t.id, title: t.title, status: t.status, estimatedHours: t.estimatedHours })),
+    }
+  })
+
+  return { ranking: rankedUsers, todayActivity }
+}
