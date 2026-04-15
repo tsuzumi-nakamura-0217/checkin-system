@@ -1,4 +1,13 @@
-export default function Home() {
+import { redirect } from "next/navigation"
+import { getCurrentUser } from "@/lib/current-user"
+
+export default async function Home() {
+  const currentUser = await getCurrentUser()
+
+  if (currentUser?.id) {
+    redirect("/dashboard/overview")
+  }
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-20">
       <div className="relative z-10 w-full max-w-3xl rounded-3xl border border-border/70 bg-card/85 p-8 text-center shadow-xl shadow-primary/6 backdrop-blur sm:p-12">
