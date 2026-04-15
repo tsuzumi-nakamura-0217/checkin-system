@@ -37,3 +37,22 @@ export function isWithinLab(userLat: number, userLon: number): boolean {
   
   return distance <= allowedRadius
 }
+
+/**
+ * Check if the user's IP address belongs to the lab network.
+ * Used as a fallback when GPS/geolocation is unavailable (e.g. indoors).
+ */
+export function isLabNetwork(clientIp: string | null): boolean {
+  if (!clientIp) return false
+
+  const allowedIps = process.env.ALLOWED_LAB_IPS
+  if (!allowedIps) {
+    console.error("Environment variable ALLOWED_LAB_IPS is not set!")
+    return false
+  }
+
+  const ipList = allowedIps.split(",").map((ip) => ip.trim())
+  const isAllowed = ipList.includes(clientIp)
+  console.log(`IP check: ${clientIp} → ${isAllowed ? "allowed" : "denied"} (allowed: ${ipList.join(", ")})`)
+  return isAllowed
+}

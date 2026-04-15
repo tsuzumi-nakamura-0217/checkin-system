@@ -22,32 +22,36 @@ type CheckInErrorResponse = {
   error: string
 }
 
-function getCurrentPosition(): Promise<GeolocationPosition> {
+function getCurrentPosition(): Promise<GeolocationPosition | null> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error("このブラウザは位置情報取得に対応していません。"))
+      // Geolocation非対応の場合はnullを返してIPフォールバックへ
+      resolve(null)
       return
     }
 
-    navigator.geolocation.getCurrentPosition(resolve, (error) => {
-      let message = "位置情報の取得に失敗しました。"
-
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          message = "位置情報の利用が許可されていません。ブラウザの設定から許可してください。"
-          break
-        case error.POSITION_UNAVAILABLE:
-          message = "位置情報を取得できません。OSの位置情報設定がオンになっているか確認してください。"
-          break
-        case error.TIMEOUT:
-          message = "位置情報の取得がタイムアウトしました。もう一度お試しください。"
-          break
+    const handleError = (error: GeolocationPositionError) => {
+      // PERMISSION_DENIEDの場合はフォールバックせずに明確なエラーを出す
+      if (error.code === error.PERMISSION_DENIED) {
+        reject(new Error("位置情報の利用が許可されていません。ブラウザの設定から許可してください。"))
+        return
       }
-      reject(new Error(message))
+      // それ以外（POSITION_UNAVAILABLE, TIMEOUT）はnullを返してIPフォールバックへ
+      resolve(null)
+    }
+
+    // まず高精度（GPS）で試行
+    navigator.geolocation.getCurrentPosition(resolve, () => {
+      // 高精度が失敗した場合、低精度（Wi-Fi/基地局）でフォールバック
+      navigator.geolocation.getCurrentPosition(resolve, handleError, {
+        enableHighAccuracy: false,
+        timeout: 15000,
+        maximumAge: 60000, // 1分以内のキャッシュを許可
+      })
     }, {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
+      timeout: 8000,
+      maximumAge: 30000, // 30秒以内のキャッシュを許可
     })
   })
 }
@@ -99,15 +103,18 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
     try {
       const position = await getCurrentPosition()
 
+      const body: Record<string, number> = {}
+      if (position) {
+        body.latitude = position.coords.latitude
+        body.longitude = position.coords.longitude
+      }
+
       const response = await fetch("/api/checkin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        }),
+        body: JSON.stringify(body),
       })
 
       const data = (await response.json()) as CheckInSuccessResponse | CheckInErrorResponse

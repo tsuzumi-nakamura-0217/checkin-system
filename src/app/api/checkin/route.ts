@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
+import { headers } from "next/headers"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
-import { isWithinLab, getDistanceFromLatLonInM } from "@/lib/location-validator"
+import { isWithinLab, getDistanceFromLatLonInM, isLabNetwork } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
 import { markUserCheckInNoCount, updateUserCheckInStreak } from "@/lib/streak-utils"
@@ -66,44 +67,73 @@ export async function POST(request: Request) {
   }
 
   const { latitude, longitude } = body
+  const hasCoords = isNumberInRange(latitude, -90, 90) && isNumberInRange(longitude, -180, 180)
 
-  if (!isNumberInRange(latitude, -90, 90) || !isNumberInRange(longitude, -180, 180)) {
-    return NextResponse.json(
-      { success: false, error: "緯度・経度の形式が不正です。" },
-      { status: 400 }
-    )
-  }
+  // Get client IP for fallback validation
+  const headersList = await headers()
+  const forwarded = headersList.get("x-forwarded-for")
+  const clientIp = forwarded ? forwarded.split(",")[0].trim() : null
 
-  // Temporary debug: compute distance info for diagnosis
-  const labLatStr = process.env.LAB_LATITUDE
-  const labLonStr = process.env.LAB_LONGITUDE
-  const radStr = process.env.ALLOWED_RADIUS_METERS
-  const debugInfo = {
-    userLat: latitude,
-    userLon: longitude,
-    labLatSet: !!labLatStr,
-    labLonSet: !!labLonStr,
-    labLat: labLatStr ? parseFloat(labLatStr) : null,
-    labLon: labLonStr ? parseFloat(labLonStr) : null,
-    allowedRadius: radStr ? parseFloat(radStr) : 100,
-    distance: labLatStr && labLonStr
-      ? getDistanceFromLatLonInM(latitude, longitude, parseFloat(labLatStr), parseFloat(labLonStr))
-      : null,
-  }
+  let verificationMethod: "GPS" | "IP" = "GPS"
 
-  if (!isWithinLab(latitude, longitude)) {
-    console.log("Check-in failed due to location:", debugInfo);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "研究室の指定範囲外です。位置情報を確認してから再度チェックインしてください。",
-        debug: debugInfo,
-      },
-      { status: 403 }
-    )
+  if (hasCoords) {
+    // GPS座標がある場合はGPSで検証
+    const labLatStr = process.env.LAB_LATITUDE
+    const labLonStr = process.env.LAB_LONGITUDE
+    const radStr = process.env.ALLOWED_RADIUS_METERS
+    const debugInfo = {
+      userLat: latitude,
+      userLon: longitude,
+      labLatSet: !!labLatStr,
+      labLonSet: !!labLonStr,
+      labLat: labLatStr ? parseFloat(labLatStr) : null,
+      labLon: labLonStr ? parseFloat(labLonStr) : null,
+      allowedRadius: radStr ? parseFloat(radStr) : 100,
+      distance: labLatStr && labLonStr
+        ? getDistanceFromLatLonInM(latitude as number, longitude as number, parseFloat(labLatStr), parseFloat(labLonStr))
+        : null,
+    }
+
+    if (isWithinLab(latitude as number, longitude as number)) {
+      verificationMethod = "GPS"
+      console.log("Check-in location validated via GPS:", { latitude, longitude })
+    } else {
+      console.log("GPS check failed, trying IP fallback:", debugInfo)
+      // GPSが範囲外でもIPで研究室ネットワーク上ならOK
+      if (isLabNetwork(clientIp)) {
+        verificationMethod = "IP"
+        console.log("Check-in location validated via IP fallback:", { clientIp })
+      } else {
+        console.log("Check-in failed - both GPS and IP check failed:", { ...debugInfo, clientIp })
+        return NextResponse.json(
+          {
+            success: false,
+            error: "研究室の指定範囲外です。位置情報を確認してから再度チェックインしてください。",
+            debug: debugInfo,
+          },
+          { status: 403 }
+        )
+      }
+    }
   } else {
-    console.log("Check-in location validated:", { latitude, longitude });
+    // GPS座標がない場合はIPアドレスで検証
+    console.log("No GPS coordinates provided, checking IP:", { clientIp })
+    if (isLabNetwork(clientIp)) {
+      verificationMethod = "IP"
+      console.log("Check-in location validated via IP:", { clientIp })
+    } else {
+      console.log("Check-in failed - no GPS and IP check failed:", { clientIp })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "位置情報を取得できませんでした。研究室のWi-Fiに接続してから再度お試しください。",
+        },
+        { status: 403 }
+      )
+    }
   }
+
+  console.log(`Location verified: method=${verificationMethod}, ip=${clientIp}`)
 
   const now = new Date()
   
@@ -211,8 +241,8 @@ export async function POST(request: Request) {
         targetTime,
         pointsEarned: points,
         status,
-        latitude,
-        longitude,
+        latitude: hasCoords ? (latitude as number) : null,
+        longitude: hasCoords ? (longitude as number) : null,
       },
     }),
     prisma.user.update({
