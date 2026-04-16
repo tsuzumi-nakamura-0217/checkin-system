@@ -38,10 +38,11 @@ export function parseWeekDateParam(value: string | string[] | undefined): Date |
   return parsed
 }
 
-export function formatTimeLabel(date: Date): string {
+export function formatTimeLabel(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date
   return new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date)
+  }).format(d)
 }

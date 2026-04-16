@@ -117,20 +117,23 @@ export function getTaskTypeLabel(type: string) {
   return type
 }
 
-export function formatDateTimeLabel(date: Date) {
+export function formatDateTimeLabel(date: Date | string) {
+  const d = typeof date === "string" ? new Date(date) : date
   return new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date)
+  }).format(d)
 }
 
-export function formatTaskRange(startAt: Date, endAt: Date) {
-  return `${formatDateTimeLabel(startAt)} - ${new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
+export function formatTaskRange(startAt: Date | string, endAt: Date | string) {
+  const s = typeof startAt === "string" ? new Date(startAt) : startAt
+  const e = typeof endAt === "string" ? new Date(endAt) : endAt
+  return `${formatDateTimeLabel(s)} - ${new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(endAt)}`
+  }).format(e)}`
 }
 
 // Helpers
@@ -198,7 +201,8 @@ export async function getOverviewData(userId: string) {
 
   const [
     todayCheckIn,
-    tasks,
+    todayTasksRaw,
+    doneTaskCountCalc,
     weeklyCheckIns,
     weeklyDoneTasks,
     advanceNotices,
@@ -211,9 +215,12 @@ export async function getOverviewData(userId: string) {
       select: { time: true, checkOutTime: true, pointsEarned: true, status: true },
     }),
     prisma.task.findMany({
-      where: { userId },
+      where: { userId, startAt: { gte: dayStart, lt: nextDayStart } },
       orderBy: [{ createdAt: "desc" }],
       select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+    }),
+    prisma.task.count({
+      where: { userId, status: "DONE" },
     }),
     prisma.checkIn.findMany({
       where: { userId, time: { gte: weekStart, lt: weekEnd } },
@@ -245,8 +252,8 @@ export async function getOverviewData(userId: string) {
 
   const computedTotalPoints = totalCheckInPointsValue + totalTaskPointsValue
 
-  const todayTasks = tasks
-    .filter((task) => task.startAt && task.endAt && task.startAt >= dayStart && task.startAt < nextDayStart)
+  const todayTasks = todayTasksRaw
+    .filter((task) => task.startAt && task.endAt)
     .map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
 
   const weeklyCheckInPoints = weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0)
@@ -260,7 +267,7 @@ export async function getOverviewData(userId: string) {
     weeklyCheckInPoints,
     weeklyCheckInCount,
     weeklyTaskPoints,
-    doneTaskCount: tasks.filter((t) => t.status === "DONE").length,
+    doneTaskCount: doneTaskCountCalc,
     advanceNotices,
     checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
     checkedOutTimeLabel: todayCheckIn?.checkOutTime ? formatTimeLabel(todayCheckIn.checkOutTime) : null,
@@ -282,6 +289,7 @@ export async function getTasksData(userId: string) {
   const tasks = await prisma.task.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    take: 100,
     select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
   })
 
@@ -305,7 +313,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
 
   const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks, todayCheckIn] = await Promise.all([
     prisma.task.findMany({
-      where: { userId },
+      where: { userId, startAt: { lt: weekEnd }, endAt: { gte: weekStart } },
       select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
     prisma.checkIn.findMany({
@@ -330,9 +338,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
 
   const todayTasks = allTasks.map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
 
-  const calendarTasks = tasks
-    .filter((task) => task.startAt && task.endAt && task.endAt >= weekStart && task.startAt < weekEnd)
-    .map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
+  const calendarTasks = tasks.map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
 
   const calendarCheckIns = weeklyCheckIns.map((checkIn) => ({
     time: checkIn.time.toISOString(), checkOutTime: checkIn.checkOutTime ? checkIn.checkOutTime.toISOString() : null, pointsEarned: checkIn.pointsEarned, status: checkIn.status,
@@ -433,10 +439,11 @@ function getDayTargetTimeKey(): string {
   return dayNames[day]
 }
 
-export async function getAllUsersRankingAndTodayActivity(): Promise<{
-  ranking: RankedUser[]
-  todayActivity: TodayUserActivity[]
-}> {
+export const getAllUsersRankingAndTodayActivity = unstable_cache(
+  async (): Promise<{
+    ranking: RankedUser[]
+    todayActivity: TodayUserActivity[]
+  }> => {
   const { dayStart, nextDayStart } = getTodayBoundaries()
   const dayKey = getDayTargetTimeKey()
   const targetTimeField = `targetTime${dayKey}` as const
@@ -550,5 +557,8 @@ export async function getAllUsersRankingAndTodayActivity(): Promise<{
     }
   })
 
-  return { ranking: rankedUsers, todayActivity }
-}
+    return { ranking: rankedUsers, todayActivity }
+  },
+  ["all-users-ranking-today-activity"],
+  { revalidate: 30 }
+)
