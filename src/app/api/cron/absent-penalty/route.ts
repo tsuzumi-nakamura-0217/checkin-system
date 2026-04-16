@@ -15,9 +15,13 @@ export async function GET(request: Request) {
     }
 
     const now = new Date();
+    // Vercel cron may trigger at exactly 14:59 UTC, but could delay a few minutes past 15:00 UTC (midnight JST).
+    // If it triggers within the first 30 minutes of the next day, we still want to calculate for the *previous* day.
+    const logicalTimeForDayCalc = now.getTime() - (30 * 60 * 1000); // Shift back 30 minutes
+    
     // JST Offset (+9 hours)
     const jstOffset = 9 * 60 * 60 * 1000;
-    const todayJST = new Date(now.getTime() + jstOffset);
+    const todayJST = new Date(logicalTimeForDayCalc + jstOffset);
     
     const year = todayJST.getUTCFullYear();
     const month = todayJST.getUTCMonth();
