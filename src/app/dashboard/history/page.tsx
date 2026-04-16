@@ -72,6 +72,7 @@ export default async function DashboardHistoryPage() {
                         day: "2-digit",
                         hour: "2-digit",
                         minute: "2-digit",
+                        timeZone: "Asia/Tokyo",
                       }).format(item.time)}
                     </td>
                     <td className="px-4 py-3">
