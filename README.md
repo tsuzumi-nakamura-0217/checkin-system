@@ -99,9 +99,13 @@
 ### 初期セットアップ
 1. Prisma Client を再生成
   - `npx prisma generate`
-2. スキーマを DB に反映
-  - 開発環境例: `npx prisma db push`
-3. アプリを起動
+2. スキーマを DB に反映（ローカル SQLite）
+  - `npm run db:push:local`
+  - `prisma/schema.prisma` が `provider = "sqlite"` のため、`DATABASE_URL` は `file:...` 形式を使用してください。
+3. Turso に反映（必要な場合）
+  - `npm run db:push:turso`
+  - `migration.sql` が無い場合は `push.cjs` が自動生成して適用します。
+4. アプリを起動
   - `npm run dev`
 
 ### 利用手順

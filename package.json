@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push:local": "prisma db push",
+    "db:push:turso": "node push.cjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

@@ -1,5 +1,22 @@
 const { createClient } = require("@libsql/client");
 const fs = require("fs");
+const { execSync } = require("child_process");
+
+function loadSql() {
+  const migrationFile = "migration.sql";
+  if (fs.existsSync(migrationFile)) {
+    return fs.readFileSync(migrationFile, "utf8");
+  }
+
+  console.log("migration.sql not found. Generating SQL from prisma/schema.prisma...");
+  const generated = execSync(
+    "npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script",
+    { encoding: "utf8" }
+  );
+  fs.writeFileSync(migrationFile, generated, "utf8");
+  console.log("Generated migration.sql");
+  return generated;
+}
 
 async function main() {
   const env = fs.readFileSync(".env", "utf8");
@@ -19,7 +36,7 @@ async function main() {
   console.log("Connecting to Turso...");
   const db = createClient({ url, authToken });
   
-  const sql = fs.readFileSync("migration.sql", "utf8");
+  const sql = loadSql();
   const statements = sql.split(";").map(s => s.trim()).filter(s => s.length > 0);
   
   console.log("Executing " + statements.length + " SQL statements...");
