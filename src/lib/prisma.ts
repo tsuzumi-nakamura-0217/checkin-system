@@ -11,7 +11,16 @@ function isConfiguredTursoUrl(url: string | undefined): url is string {
 }
 
 function shouldUseTurso() {
-  return isConfiguredTursoUrl(process.env.TURSO_DATABASE_URL)
+  if (!isConfiguredTursoUrl(process.env.TURSO_DATABASE_URL)) {
+    return false
+  }
+
+  // In development, default to local SQLite to keep prisma db push and runtime aligned.
+  if (process.env.NODE_ENV !== "production") {
+    return process.env.USE_TURSO_IN_DEV === "true"
+  }
+
+  return true
 }
 
 function getTursoDatabaseUrl(): string {

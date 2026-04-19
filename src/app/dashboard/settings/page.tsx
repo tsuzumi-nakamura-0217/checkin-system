@@ -1,4 +1,5 @@
 import { SettingsForm } from "@/components/settings-form"
+import { AiGoogleSettings } from "@/components/ai-google-settings"
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/current-user"
 
@@ -32,6 +33,10 @@ export default async function SettingsPage() {
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
         <SettingsForm />
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <AiGoogleSettings />
       </div>
     </div>
   )

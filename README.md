@@ -67,3 +67,44 @@
 
 1. **位置情報の許可**: チェックインを行うには、ブラウザまたは端末の設定画面から「位置情報サービス（GPS）」の利用を許可してください。
 2. **タイムゾーン**: 全ての計算は日本標準時 (JST) に基づいて行われます。日替わりのタイミングは午前0時(JST)です。
+
+---
+
+## AIチャット (Gemini) と Google連携
+
+### 概要
+- ダッシュボードに AI チャットページ (`/dashboard/ai`) を追加しました。
+- Gemini API を利用して回答を生成し、Settings で再認証した Google アカウントの Calendar / Drive / Gmail を参照できます。
+- 会話履歴は DB に保存されます。
+
+### 重要なセキュリティ仕様
+- **ログインに使った Google アカウントでも、Google系サービス参照には Settings での再認証が必須**です。
+- NextAuth の `Account` テーブル（ログイン用途）と、AI連携用途の `GoogleLinkedAccount` テーブルを分離しています。
+- 再認証済み (`authorizedViaSettings=true`) のアカウントのみ、AIチャットで利用されます。
+
+### 必要な環境変数
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL_NAME` (任意。未指定時: `gemini-2.0-flash`)
+- `GEMINI_DAILY_REQUEST_LIMIT` (任意。未指定時: `80`)
+- `GOOGLE_AI_REDIRECT_URI` (任意。未指定時は `/api/ai/google-accounts/callback` を使用)
+- `USE_TURSO_IN_DEV` (任意。`true` のときのみ開発環境で Turso を使用。未指定時はローカル SQLite を使用)
+
+### Google Cloud Console 設定
+- OAuth クライアントの承認済みリダイレクト URI に以下を追加してください。
+  - `https://<your-domain>/api/ai/google-accounts/callback`
+  - ローカル開発時: `http://localhost:3000/api/ai/google-accounts/callback`
+
+### 初期セットアップ
+1. Prisma Client を再生成
+  - `npx prisma generate`
+2. スキーマを DB に反映
+  - 開発環境例: `npx prisma db push`
+3. アプリを起動
+  - `npm run dev`
+
+### 利用手順
+1. `/dashboard/settings` で「Googleアカウントを追加」から再認証
+2. AIで利用するデフォルトアカウントを複数選択して保存
+3. `/dashboard/ai` でチャットを開始

@@ -35,6 +35,10 @@ model User {
 
   accounts   Account[]
   sessions   Session[]
+  googleLinkedAccounts GoogleLinkedAccount[]
+  aiGoogleSelections   UserAiGoogleSelection[]
+  aiChatSessions       AiChatSession[]
+  aiUsageDaily         AiUsageDaily[]
   checkIns   CheckIn[]
   tasks      Task[]
   exceptions ExceptionRequest[]
@@ -71,6 +75,82 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model GoogleLinkedAccount {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleSub            String
+  email                String
+  displayName          String?
+  avatarUrl            String?
+  refreshToken         String
+  accessToken          String?
+  expiresAt            Int?
+  grantedScopes        String
+  authorizedViaSettings Boolean @default(true)
+  aiAuthorizedAt       DateTime @default(now())
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  selections UserAiGoogleSelection[]
+
+  @@unique([userId, googleSub])
+  @@index([userId, isActive])
+}
+
+model UserAiGoogleSelection {
+  id              String   @id @default(cuid())
+  userId          String
+  linkedAccountId String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedAccount   GoogleLinkedAccount @relation(fields: [linkedAccountId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, linkedAccountId])
+  @@index([userId])
+}
+
+model AiChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages AiChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model AiChatMessage {
+  id           String   @id @default(cuid())
+  sessionId    String
+  session      AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role         String
+  content      String
+  metadataJson String?
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model AiUsageDaily {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateJst      String
+  requestCount Int      @default(0)
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, dateJst])
+  @@index([dateJst])
 }
 
 model Session {

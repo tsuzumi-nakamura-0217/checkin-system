@@ -65,6 +65,16 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
       </svg>
     )
   }
+  if (icon === "ai") {
+    return (
+      <svg className={cls} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.75h4.5a1.5 1.5 0 011.5 1.5v1.064a4.5 4.5 0 012.186 2.186h1.064a1.5 1.5 0 011.5 1.5v4.5a1.5 1.5 0 01-1.5 1.5h-1.064a4.5 4.5 0 01-2.186 2.186v1.064a1.5 1.5 0 01-1.5 1.5h-4.5a1.5 1.5 0 01-1.5-1.5v-1.064A4.5 4.5 0 016.564 16.5H5.5a1.5 1.5 0 01-1.5-1.5v-4.5a1.5 1.5 0 011.5-1.5h1.064A4.5 4.5 0 018.75 6.314V5.25a1.5 1.5 0 011.5-1.5z" />
+        <circle cx="9" cy="12" r="0.9" fill="currentColor" />
+        <circle cx="15" cy="12" r="0.9" fill="currentColor" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 15.2c.9.6 1.8.9 3 .9 1.2 0 2.1-.3 3-.9" />
+      </svg>
+    )
+  }
   return null
 }
 
@@ -89,7 +99,7 @@ export function DashboardNavDesktop({ navLinks }: DashboardNavProps) {
             aria-current={isActive ? "page" : undefined}
           >
             {isActive ? (
-              <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full gradient-primary" />
+              <span className="absolute left-0 top-1/2 h-6 w-0.75 -translate-y-1/2 rounded-r-full gradient-primary" />
             ) : null}
             <NavIcon icon={item.icon} className={isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"} />
             {item.label}
@@ -103,7 +113,7 @@ export function DashboardNavDesktop({ navLinks }: DashboardNavProps) {
 export function DashboardNavMobile({ navLinks }: DashboardNavProps) {
   const pathname = usePathname()
 
-  // Show only 4 main nav items on mobile bottom bar (skip settings)
+  // Hide settings in mobile bottom bar to keep the control compact.
   const mobileLinks = navLinks.filter(item => item.icon !== "settings")
 
   return (

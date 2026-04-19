@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { redirect } from "next/navigation"
 
+import { AiChatFab } from "@/components/ai-chat-fab"
 import { DashboardNavDesktop, DashboardNavMobile } from "@/components/dashboard-nav"
 import { LogoutButton } from "@/components/logout-button"
 import { getCurrentUser } from "@/lib/current-user"
@@ -15,6 +16,7 @@ const navLinks = [
   { href: "/dashboard/community", label: "コミュニティ", icon: "community" },
   { href: "/dashboard/week", label: "カレンダー", icon: "calendar" },
   { href: "/dashboard/history", label: "履歴", icon: "history" },
+  { href: "/dashboard/ai", label: "AI", icon: "ai" },
   { href: "/dashboard/settings", label: "設定", icon: "settings" },
 ]
 
@@ -31,12 +33,12 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground selection:bg-primary/20">
       <div className="relative z-10 flex w-full lg:min-h-screen">
         {/* Desktop Sidebar */}
-        <aside className="fixed top-0 left-0 z-40 hidden h-screen w-[260px] border-r border-sidebar-border bg-sidebar px-5 py-6 lg:flex lg:flex-col">
+        <aside className="fixed top-0 left-0 z-40 hidden h-screen w-65 border-r border-sidebar-border bg-sidebar px-5 py-6 lg:flex lg:flex-col">
           {/* Brand */}
           <div className="mb-6 rounded-2xl border border-border bg-card p-3.5 shadow-themed">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white shadow-sm">
-                <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -85,14 +87,14 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         </aside>
 
         {/* Main Content */}
-        <main className="w-full px-4 pb-24 pt-5 sm:px-6 lg:ml-[260px] lg:flex-1 lg:px-8 lg:pt-6 lg:pb-10">
+        <main className="w-full px-4 pb-24 pt-5 sm:px-6 lg:ml-65 lg:flex-1 lg:px-8 lg:pt-6 lg:pb-10">
           <div className="mx-auto w-full max-w-330">
             {/* Mobile Header */}
             <section className="mb-4 rounded-2xl border border-border bg-card p-3.5 shadow-themed lg:hidden">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white shadow-sm">
-                    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                    <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -125,6 +127,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
           </div>
         </main>
       </div>
+
+      <AiChatFab />
 
       {/* Mobile Bottom Nav */}
       <DashboardNavMobile navLinks={navLinks} />
