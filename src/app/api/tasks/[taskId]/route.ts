@@ -3,14 +3,15 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
-import { calculateTaskCompletionPoints } from "@/lib/point-calculator"
+import {
+  calculateEstimatedHoursFromRange,
+  calculateTaskCompletionPointsFromRange,
+} from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
 
 type UpdateTaskStatusRequestBody = {
   status?: unknown
 }
-
-// calculateTaskCompletionPoints is imported from @/lib/point-calculator
 
 export async function PATCH(
   request: Request,
@@ -49,7 +50,8 @@ export async function PATCH(
       id: true,
       userId: true,
       status: true,
-      estimatedHours: true,
+      startAt: true,
+      endAt: true,
       pointsEarned: true,
     },
   })
@@ -76,7 +78,7 @@ export async function PATCH(
   }
 
   if (targetStatus === "DONE") {
-    const points = task.pointsEarned ?? calculateTaskCompletionPoints(task.estimatedHours)
+    const points = task.pointsEarned ?? calculateTaskCompletionPointsFromRange(task.startAt, task.endAt)
 
     const [updatedTask, updatedUser] = await prisma.$transaction([
       prisma.task.update({
@@ -117,7 +119,7 @@ export async function PATCH(
     })
   }
 
-  const pointsToRevert = task.pointsEarned ?? calculateTaskCompletionPoints(task.estimatedHours)
+  const pointsToRevert = task.pointsEarned ?? calculateTaskCompletionPointsFromRange(task.startAt, task.endAt)
 
   const [updatedTask, updatedUser] = await prisma.$transaction([
     prisma.task.update({
@@ -161,7 +163,6 @@ export async function PATCH(
 type UpdateTaskRequestBody = {
   title?: unknown
   description?: unknown
-  estimatedHours?: unknown
   startAt?: unknown
   endAt?: unknown
 }
@@ -233,13 +234,6 @@ export async function PUT(
     dataToUpdate.description = body.description.trim() || null
   }
 
-  if (typeof body.estimatedHours === "number" && Number.isFinite(body.estimatedHours)) {
-    let rounded = Math.round(body.estimatedHours * 2) / 2
-    if (rounded < 0.5) rounded = 0.5
-    if (rounded > 24) rounded = 24
-    dataToUpdate.estimatedHours = rounded
-  }
-
   if ("startAt" in body) {
     const parsedStartAt = parseOptionalDate(body.startAt)
     if (parsedStartAt !== undefined) {
@@ -263,6 +257,8 @@ export async function PUT(
       { status: 400 }
     )
   }
+
+  dataToUpdate.estimatedHours = calculateEstimatedHoursFromRange(startAtToCheck, endAtToCheck) ?? 0
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },

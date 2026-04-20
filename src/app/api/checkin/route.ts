@@ -288,7 +288,7 @@ export async function POST(request: Request) {
       },
     },
     orderBy: [{ startAt: "asc" }, { createdAt: "asc" }],
-    select: { title: true, status: true, estimatedHours: true },
+    select: { title: true, status: true, startAt: true, endAt: true },
   })
 
   const checkedInTimeLabel = new Intl.DateTimeFormat("ja-JP", {

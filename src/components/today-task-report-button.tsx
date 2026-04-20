@@ -7,7 +7,8 @@ import { buildMorningReportText } from "@/lib/task-summary"
 type TodayTaskReportItem = {
   title: string
   status: string
-  estimatedHours: number | null
+  startAt: string | null
+  endAt: string | null
 }
 
 type TodayTaskReportButtonProps = {
@@ -34,7 +35,8 @@ export function TodayTaskReportButton({ todayTasks, checkedInTimeLabel, isRemote
       tasks: todayTasks.map((task) => ({
         title: task.title,
         status: task.status,
-        estimatedHours: task.estimatedHours,
+        startAt: task.startAt,
+        endAt: task.endAt,
       })),
       checkedInTimeLabel,
       isRemote,

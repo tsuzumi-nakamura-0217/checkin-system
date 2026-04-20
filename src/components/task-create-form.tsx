@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
+import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
 
 type CreateTaskSuccessResponse = {
   success: true
@@ -29,12 +30,16 @@ export function TaskCreateForm() {
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [estimatedHours, setEstimatedHours] = useState(1)
   const [startAt, setStartAt] = useState("")
   const [endAt, setEndAt] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isError, setIsError] = useState(false)
+
+  const estimatedHours = calculateEstimatedHoursFromRange(
+    startAt ? new Date(startAt) : null,
+    endAt ? new Date(endAt) : null,
+  )
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -58,7 +63,6 @@ export function TaskCreateForm() {
         body: JSON.stringify({
           title,
           description,
-          estimatedHours,
           startAt: startAt ? new Date(startAt).toISOString() : null,
           endAt: endAt ? new Date(endAt).toISOString() : null,
         }),
@@ -73,7 +77,6 @@ export function TaskCreateForm() {
 
       setTitle("")
       setDescription("")
-      setEstimatedHours(1)
       setStartAt("")
       setEndAt("")
       setMessage("タスクを追加しました。")
@@ -127,20 +130,6 @@ export function TaskCreateForm() {
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="task-hours" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間（h）</Label>
-            <Input
-              id="task-hours"
-              type="number"
-              min={0.5}
-              max={24}
-              step={0.5}
-              value={estimatedHours}
-              onChange={(event) => setEstimatedHours(Math.max(0.5, Math.min(24, Number(event.target.value) || 0.5)))}
-              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="task-start-at" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">開始日時</Label>
@@ -163,6 +152,13 @@ export function TaskCreateForm() {
                 className="h-11 rounded-xl border-border bg-background px-3 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               />
             </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
+            <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間</p>
+            <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+              {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
+            </p>
           </div>
 
           <div className="flex items-center justify-between gap-4 pt-3">

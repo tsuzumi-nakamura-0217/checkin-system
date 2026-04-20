@@ -5,6 +5,10 @@ import {
   parseWeekDateParam,
   startOfWeekMonday,
 } from "@/lib/calendar-utils"
+import {
+  calculateEstimatedHoursFromRange,
+  calculateTaskCompletionPointsFromRange,
+} from "@/lib/point-calculator"
 
 export type DashboardUserSummary = {
   points: number
@@ -33,7 +37,8 @@ export type DashboardTask = {
 
 export type DashboardDoneTaskSummary = {
   pointsEarned: number | null
-  estimatedHours: number
+  startAt: Date | null
+  endAt: Date | null
 }
 
 export type DashboardCheckInHistory = DashboardCheckInSummary & {
@@ -178,8 +183,16 @@ export async function getOverviewData(userId: string) {
   const { dayStart, nextDayStart } = getTodayBoundaries()
   const { weekStart, weekEnd } = getWeekBoundaries()
 
+  type OverviewUser = {
+    points: number
+    loginStreak?: number
+    checkInStreak?: number
+    maxLoginStreak?: number
+    maxCheckInStreak?: number
+  }
+
   // Use separate try-catch for user data to handle missing columns gracefully during transitions
-  let user;
+  let user: OverviewUser | null
   try {
     user = await prisma.user.findUnique({
       where: { id: userId },
@@ -217,7 +230,7 @@ export async function getOverviewData(userId: string) {
     prisma.task.findMany({
       where: { userId, startAt: { gte: dayStart, lt: nextDayStart } },
       orderBy: [{ createdAt: "desc" }],
-      select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+      select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
     prisma.task.count({
       where: { userId, status: "DONE" },
@@ -228,7 +241,7 @@ export async function getOverviewData(userId: string) {
     }),
     prisma.task.findMany({
       where: { userId, status: "DONE", completedAt: { gte: weekStart, lt: weekEnd } },
-      select: { pointsEarned: true, estimatedHours: true },
+      select: { pointsEarned: true, startAt: true, endAt: true },
     }),
     prisma.exceptionRequest.findMany({
       where: { userId, date: { gte: dayStart } },
@@ -241,24 +254,40 @@ export async function getOverviewData(userId: string) {
     }),
     prisma.task.findMany({
       where: { userId, status: "DONE" },
-      select: { pointsEarned: true, estimatedHours: true },
+      select: { pointsEarned: true, startAt: true, endAt: true },
     }),
   ])
 
   if (!user) return null
 
   const totalCheckInPointsValue = totalCheckInPoints._sum.pointsEarned ?? 0
-  const totalTaskPointsValue = totalDoneTaskPoints.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
+  const totalTaskPointsValue = totalDoneTaskPoints.reduce(
+    (sum, item) => sum + (item.pointsEarned ?? calculateTaskCompletionPointsFromRange(item.startAt, item.endAt)),
+    0,
+  )
 
   const computedTotalPoints = totalCheckInPointsValue + totalTaskPointsValue
 
   const todayTasks = todayTasksRaw
     .filter((task) => task.startAt && task.endAt)
-    .map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
+    .map((task) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      estimatedHours: calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0,
+      type: task.type,
+      status: task.status,
+      pointsEarned: task.pointsEarned,
+      startAt: task.startAt ? task.startAt.toISOString() : null,
+      endAt: task.endAt ? task.endAt.toISOString() : null,
+    }))
 
   const weeklyCheckInPoints = weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0)
   const weeklyCheckInCount = weeklyCheckIns.length
-  const weeklyTaskPoints = weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0)
+  const weeklyTaskPoints = weeklyDoneTasks.reduce(
+    (sum, item) => sum + (item.pointsEarned ?? calculateTaskCompletionPointsFromRange(item.startAt, item.endAt)),
+    0,
+  )
 
   return {
     user: { points: computedTotalPoints },
@@ -277,21 +306,26 @@ export async function getOverviewData(userId: string) {
     weekEnd,
     totalCheckInPoints: totalCheckInPointsValue,
     totalTaskPoints: totalTaskPointsValue,
-    loginStreak: (user as any)?.loginStreak ?? 0,
-    checkInStreak: (user as any)?.checkInStreak ?? 0,
-    maxLoginStreak: (user as any)?.maxLoginStreak ?? 0,
-    maxCheckInStreak: (user as any)?.maxCheckInStreak ?? 0,
+    loginStreak: user.loginStreak ?? 0,
+    checkInStreak: user.checkInStreak ?? 0,
+    maxLoginStreak: user.maxLoginStreak ?? 0,
+    maxCheckInStreak: user.maxCheckInStreak ?? 0,
     isRemoteCheckIn: todayCheckIn?.status === "REMOTE",
   }
 }
 
 export async function getTasksData(userId: string) {
-  const tasks = await prisma.task.findMany({
+  const tasksRaw = await prisma.task.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: 100,
-    select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+    select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
   })
+
+  const tasks = tasksRaw.map((task) => ({
+    ...task,
+    estimatedHours: calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0,
+  }))
 
   return { tasks }
 }
@@ -314,7 +348,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
   const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks, todayCheckIn] = await Promise.all([
     prisma.task.findMany({
       where: { userId, startAt: { lt: weekEnd }, endAt: { gte: weekStart } },
-      select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+      select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
     prisma.checkIn.findMany({
       where: { userId, time: { gte: weekStart, lt: weekEnd } },
@@ -323,11 +357,11 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     }),
     prisma.task.findMany({
       where: { userId, status: "DONE", completedAt: { gte: weekStart, lt: weekEnd } },
-      select: { pointsEarned: true, estimatedHours: true },
+      select: { pointsEarned: true, startAt: true, endAt: true },
     }),
     prisma.task.findMany({
       where: { userId, startAt: { gte: dayStart, lt: nextDayStart } },
-      select: { id: true, title: true, description: true, estimatedHours: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+      select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
     prisma.checkIn.findFirst({
       where: { userId, time: { gte: dayStart, lt: nextDayStart } },
@@ -336,9 +370,29 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     }),
   ])
 
-  const todayTasks = allTasks.map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
+  const todayTasks = allTasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    estimatedHours: calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0,
+    type: task.type,
+    status: task.status,
+    pointsEarned: task.pointsEarned,
+    startAt: task.startAt ? task.startAt.toISOString() : null,
+    endAt: task.endAt ? task.endAt.toISOString() : null,
+  }))
 
-  const calendarTasks = tasks.map((task) => ({ id: task.id, title: task.title, description: task.description, estimatedHours: task.estimatedHours, type: task.type, status: task.status, pointsEarned: task.pointsEarned, startAt: task.startAt ? task.startAt.toISOString() : null, endAt: task.endAt ? task.endAt.toISOString() : null }))
+  const calendarTasks = tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    estimatedHours: calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0,
+    type: task.type,
+    status: task.status,
+    pointsEarned: task.pointsEarned,
+    startAt: task.startAt ? task.startAt.toISOString() : null,
+    endAt: task.endAt ? task.endAt.toISOString() : null,
+  }))
 
   const calendarCheckIns = weeklyCheckIns.map((checkIn) => ({
     time: checkIn.time.toISOString(), checkOutTime: checkIn.checkOutTime ? checkIn.checkOutTime.toISOString() : null, pointsEarned: checkIn.pointsEarned, status: checkIn.status,
@@ -359,7 +413,10 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     calendarCheckIns,
     todayTasks,
     weeklyCheckInPoints: weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0),
-    weeklyTaskPoints: weeklyDoneTasks.reduce((sum, item) => sum + (item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)), 0),
+    weeklyTaskPoints: weeklyDoneTasks.reduce(
+      (sum, item) => sum + (item.pointsEarned ?? calculateTaskCompletionPointsFromRange(item.startAt, item.endAt)),
+      0,
+    ),
     checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
     isRemoteCheckIn: todayCheckIn?.status === "REMOTE",
   }
@@ -472,7 +529,7 @@ export const getAllUsersRankingAndTodayActivity = unstable_cache(
     }),
     prisma.task.findMany({
       where: { status: "DONE" },
-      select: { userId: true, pointsEarned: true, estimatedHours: true },
+      select: { userId: true, pointsEarned: true, startAt: true, endAt: true },
     }),
     prisma.checkIn.findMany({
       where: { time: { gte: dayStart, lt: nextDayStart } },
@@ -486,7 +543,7 @@ export const getAllUsersRankingAndTodayActivity = unstable_cache(
           { type: "DAILY" },
         ],
       },
-      select: { id: true, userId: true, title: true, status: true, estimatedHours: true, startAt: true, type: true },
+      select: { id: true, userId: true, title: true, status: true, startAt: true, endAt: true, type: true },
     }),
   ])
 
@@ -499,7 +556,7 @@ export const getAllUsersRankingAndTodayActivity = unstable_cache(
   // Build task points map
   const taskPointsMap = new Map<string, number>()
   for (const item of allDoneTaskPoints) {
-    const pts = item.pointsEarned ?? Math.floor(item.estimatedHours / 0.5)
+    const pts = item.pointsEarned ?? calculateTaskCompletionPointsFromRange(item.startAt, item.endAt)
     taskPointsMap.set(item.userId, (taskPointsMap.get(item.userId) ?? 0) + pts)
   }
 

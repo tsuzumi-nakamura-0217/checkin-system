@@ -1,7 +1,10 @@
+import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
+
 export type TaskSummaryItem = {
   title: string
   status: string
-  estimatedHours?: number | null
+  startAt?: Date | string | null
+  endAt?: Date | string | null
 }
 
 type BuildMorningReportOptions = {
@@ -39,9 +42,7 @@ export function buildMorningReportText({
 
   const taskCount = tasks.length
   const totalHours = tasks.reduce((sum, task) => {
-    const hours = typeof task.estimatedHours === "number" && Number.isFinite(task.estimatedHours)
-      ? task.estimatedHours
-      : 0
+    const hours = calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0
     return sum + hours
   }, 0)
 

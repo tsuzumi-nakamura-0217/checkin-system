@@ -3,25 +3,17 @@ import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
+import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
 
 type CreateTaskRequestBody = {
   title?: unknown
   description?: unknown
-  estimatedHours?: unknown
   type?: unknown
   startAt?: unknown
   endAt?: unknown
 }
 
 const ALLOWED_TASK_TYPES = new Set(["DAILY", "WEEKLY", "MONTHLY"])
-
-function normalizeEstimatedHours(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 1
-  const rounded = Math.round(value * 2) / 2
-  if (rounded < 0.5) return 0.5
-  if (rounded > 24) return 24
-  return rounded
-}
 
 function parseOptionalDate(value: unknown): Date | null | undefined {
   if (value === null || value === undefined || value === "") {
@@ -61,7 +53,6 @@ export async function POST(request: Request) {
   }
 
   const description = typeof body.description === "string" ? body.description.trim() : ""
-  const estimatedHours = normalizeEstimatedHours(body.estimatedHours)
 
   const type =
     typeof body.type === "string" && ALLOWED_TASK_TYPES.has(body.type)
@@ -84,6 +75,8 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
+
+  const estimatedHours = calculateEstimatedHoursFromRange(startAt, endAt) ?? 0
 
   const task = await prisma.task.create({
     data: {

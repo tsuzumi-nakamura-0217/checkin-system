@@ -101,7 +101,8 @@ export async function POST() {
     select: {
       title: true,
       status: true,
-      estimatedHours: true,
+      startAt: true,
+      endAt: true,
     },
   })
 

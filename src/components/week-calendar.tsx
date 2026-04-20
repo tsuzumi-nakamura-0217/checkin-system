@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { formatTimeLabel, toDayKey } from "@/lib/calendar-utils"
+import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
 
 type CalendarTask = {
   id: string
   title: string
   description: string | null
-  estimatedHours: number
   type: string
   status: string
   pointsEarned: number | null
@@ -180,7 +180,6 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
   const [editingTask, setEditingTask] = useState<EditTaskState | null>(null)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [estimatedHours, setEstimatedHours] = useState(1)
   const [status, setStatus] = useState<"TODO" | "DONE">("TODO")
   const [startAtInput, setStartAtInput] = useState("")
   const [endAtInput, setEndAtInput] = useState("")
@@ -188,7 +187,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
   const [isDeleting, setIsDeleting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isError, setIsError] = useState(false)
-  const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+  const [, setCurrentTimeTick] = useState(Date.now())
 
   useEffect(() => { setHasMounted(true) }, [])
 
@@ -250,16 +249,26 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     return { dayIndex: dragStart.dayIndex, startSlot: s, endSlot: e }
   }, [dragCurrent, dragStart])
 
+  const modalEstimatedHours = useMemo(() => {
+    if (editingTask) {
+      return calculateEstimatedHoursFromRange(parseLocalDateTime(startAtInput), parseLocalDateTime(endAtInput))
+    }
+    if (selectedRange) {
+      return calculateEstimatedHoursFromRange(selectedRange.startAt, selectedRange.endAt)
+    }
+    return null
+  }, [editingTask, endAtInput, selectedRange, startAtInput])
+
   const closeModal = () => {
     setSelectedRange(null); setEditingTask(null); setTitle(""); setDescription("")
-    setEstimatedHours(1); setStatus("TODO"); setStartAtInput(""); setEndAtInput("")
+    setStatus("TODO"); setStartAtInput(""); setEndAtInput("")
     setIsDeleting(false); setMessage(null); setIsError(false)
   }
 
   const openEditModal = (task: ScheduledCalendarTask) => {
     setSelectedRange(null)
     setEditingTask({ taskId: task.id, originalStatus: task.status === "DONE" ? "DONE" : "TODO" })
-    setTitle(task.title); setDescription(task.description ?? ""); setEstimatedHours(task.estimatedHours)
+    setTitle(task.title); setDescription(task.description ?? "")
     setStatus(task.status === "DONE" ? "DONE" : "TODO")
     setStartAtInput(toDateTimeLocalValue(task.startDate)); setEndAtInput(toDateTimeLocalValue(task.endDate))
     setMessage(null); setIsError(false)
@@ -294,9 +303,8 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (!activeSelection) { setDragStart(null); setDragCurrent(null); window.setTimeout(() => { suppressPostDragClickRef.current = false }, 0); return }
     const sAt = buildDateFromSlot(weekStart, activeSelection.dayIndex, activeSelection.startSlot, startHour)
     const eAt = buildDateFromSlot(weekStart, activeSelection.dayIndex, activeSelection.endSlot, startHour)
-    const diffHours = Math.max(0.5, Math.round((eAt.getTime() - sAt.getTime()) / (60 * 60 * 1000) * 2) / 2)
     setSelectedRange({ startAt: sAt, endAt: eAt }); setEditingTask(null); setTitle(""); setDescription(""); setStatus("TODO")
-    setStartAtInput(""); setEndAtInput(""); setEstimatedHours(diffHours); setDragStart(null); setDragCurrent(null)
+    setStartAtInput(""); setEndAtInput(""); setDragStart(null); setDragCurrent(null)
     setMessage(null); setIsError(false)
     window.setTimeout(() => { suppressPostDragClickRef.current = false }, 0)
   }, [activeSelection, weekStart, startHour])
@@ -350,7 +358,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (parsedEndAt <= parsedStartAt) { setIsError(true); setMessage("終了時刻は開始時刻より後にしてください。"); return }
     setIsSubmitting(true); setMessage(null); setIsError(false)
     try {
-      const updateResponse = await fetch(`/api/tasks/${editingTask.taskId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, estimatedHours, startAt: parsedStartAt.toISOString(), endAt: parsedEndAt.toISOString() }) })
+      const updateResponse = await fetch(`/api/tasks/${editingTask.taskId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: parsedStartAt.toISOString(), endAt: parsedEndAt.toISOString() }) })
       const updateData = (await updateResponse.json().catch(() => null)) as { success: true } | { success: false; error?: string } | null
       if (!updateResponse.ok || !updateData?.success) { const errorText = updateData && !updateData.success ? updateData.error : "タスク更新に失敗しました。"; throw new Error(errorText || "タスク更新に失敗しました。") }
       if (status !== editingTask.originalStatus) {
@@ -382,7 +390,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (!title.trim()) { setIsError(true); setMessage("タスク名は必須です。"); return }
     setIsSubmitting(true); setMessage(null); setIsError(false)
     try {
-      const response = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, estimatedHours, startAt: selectedRange.startAt.toISOString(), endAt: selectedRange.endAt.toISOString() }) })
+      const response = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: selectedRange.startAt.toISOString(), endAt: selectedRange.endAt.toISOString() }) })
       const data = (await response.json().catch(() => null)) as { success: true } | { success: false; error?: string } | null
       if (!response.ok || !data?.success) { const errorText = data && !data.success ? data.error : "タスク作成に失敗しました。"; throw new Error(errorText || "タスク作成に失敗しました。") }
       closeModal(); router.refresh()
@@ -691,10 +699,12 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                   </div>
                 </div>
               ) : null}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label htmlFor="calendar-task-hours" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間 (h)</label>
-                  <input id="calendar-task-hours" type="number" min={0.5} max={24} step={0.5} value={estimatedHours} onChange={(e) => { const next = Number(e.target.value); setEstimatedHours(Number.isFinite(next) ? Math.max(0.5, Math.min(24, next)) : 0.5) }} className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" />
+              <div className={editingTask ? "grid gap-4 sm:grid-cols-2" : "space-y-1.5"}>
+                <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
+                  <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間（自動）</label>
+                  <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+                    {modalEstimatedHours == null ? "未設定" : `${modalEstimatedHours}h`}
+                  </p>
                 </div>
                 {editingTask ? (
                   <div className="space-y-1.5">

@@ -7,6 +7,10 @@ import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskStatusToggle } from "@/components/task-status-toggle"
 import { formatPoint, formatTaskRange, getTaskTypeLabel } from "@/lib/dashboard-data"
+import {
+  calculateEstimatedHoursFromRange,
+  calculateTaskCompletionPointsFromRange,
+} from "@/lib/point-calculator"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -20,7 +24,6 @@ type Task = {
   id: string
   title: string
   description: string | null
-  estimatedHours: number
   type: string
   status: string
   startAt: Date | null
@@ -39,8 +42,9 @@ export function TaskCard({ task }: TaskCardProps) {
   
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || "")
-  const [estimatedHours, setEstimatedHours] = useState(task.estimatedHours)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const estimatedHours = calculateEstimatedHoursFromRange(task.startAt, task.endAt)
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +53,7 @@ export function TaskCard({ task }: TaskCardProps) {
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, estimatedHours })
+        body: JSON.stringify({ title, description })
       })
 
       if (response.ok) {
@@ -96,7 +100,6 @@ export function TaskCard({ task }: TaskCardProps) {
       setTimeout(() => {
         setTitle(task.title)
         setDescription(task.description || "")
-        setEstimatedHours(task.estimatedHours)
       }, 300)
     }
     setIsOpen(open)
@@ -123,7 +126,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 {getTaskTypeLabel(task.type)}
               </span>
               <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold tabular-nums text-muted-foreground">
-                {task.estimatedHours}h
+                {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
               </span>
             </div>
 
@@ -137,7 +140,7 @@ export function TaskCard({ task }: TaskCardProps) {
 
             {isDone ? (
               <p className="text-[11px] font-bold text-accent pt-0.5">
-                {`完了ポイント: ${formatPoint(task.pointsEarned ?? Math.floor(task.estimatedHours / 0.5))}pt`}
+                {`完了ポイント: ${formatPoint(task.pointsEarned ?? calculateTaskCompletionPointsFromRange(task.startAt, task.endAt))}pt`}
               </p>
             ) : null}
           </div>
@@ -175,20 +178,11 @@ export function TaskCard({ task }: TaskCardProps) {
             />
           </div>
           
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間 (H)</Label>
-            <Input
-              type="number"
-              value={estimatedHours}
-              onChange={(e) => {
-                const next = Number(e.target.value)
-                setEstimatedHours(Number.isFinite(next) ? Math.max(0.5, Math.min(24, next)) : 0.5)
-              }}
-              min={0.5}
-              max={24}
-              step={0.5}
-              className="h-11 rounded-xl border-border bg-background px-4 text-sm font-medium shadow-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
-            />
+          <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間</Label>
+            <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
+              {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
+            </p>
           </div>
           
           <div className="flex items-center justify-between gap-4 pt-3">
