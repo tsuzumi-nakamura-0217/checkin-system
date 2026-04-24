@@ -126,12 +126,17 @@ export async function GET(request: Request) {
         if (lateMinutes > 0) {
           const penaltyPoints = -(lateMinutes * 10);
 
+          // Use 23:59:00 JST of the absent day as the record time
+          // so the record belongs to the correct calendar day and
+          // does not block the next day's check-in.
+          const absentRecordTime = new Date(Date.UTC(year, month, date, 14, 59, 0, 0)); // 23:59:00 JST
+
           // Insert an absent record and deduct points
           await prisma.$transaction([
             prisma.checkIn.create({
               data: {
                 userId: user.id,
-                time: now,
+                time: absentRecordTime,
                 targetTime: targetTimeStr,
                 status: 'ABSENT',
                 pointsEarned: penaltyPoints,
