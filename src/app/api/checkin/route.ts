@@ -14,6 +14,25 @@ type CheckInRequestBody = {
   longitude?: unknown
 }
 
+function getClientIp(headersList: { get(name: string): string | null }): string | null {
+  const headerCandidates = [
+    "x-forwarded-for",
+    "x-vercel-forwarded-for",
+    "x-real-ip",
+    "cf-connecting-ip",
+    "true-client-ip",
+  ]
+
+  for (const headerName of headerCandidates) {
+    const headerValue = headersList.get(headerName)
+    if (!headerValue) continue
+    const ip = headerValue.split(",")[0]?.trim()
+    if (ip) return ip
+  }
+
+  return null
+}
+
 function isNumberInRange(value: unknown, min: number, max: number): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= min && value <= max
 }
@@ -70,9 +89,8 @@ export async function POST(request: Request) {
   const hasCoords = isNumberInRange(latitude, -90, 90) && isNumberInRange(longitude, -180, 180)
 
   // Get client IP for fallback validation
-  const headersList = await headers()
-  const forwarded = headersList.get("x-forwarded-for")
-  const clientIp = forwarded ? forwarded.split(",")[0].trim() : null
+  const headersList = headers()
+  const clientIp = getClientIp(headersList)
 
   let verificationMethod: "GPS" | "IP" = "GPS"
 
