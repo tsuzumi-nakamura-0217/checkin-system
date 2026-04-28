@@ -128,7 +128,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             success: false,
-            error: "研究室の指定範囲外です。位置情報を確認してから再度チェックインしてください。",
+            error: "研究室の指定範囲外、かつ指定ネットワーク外です。位置情報やWi-Fiの接続先を確認してください。",
             debug: debugInfo,
           },
           { status: 403 }
