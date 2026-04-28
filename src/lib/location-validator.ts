@@ -38,12 +38,14 @@ export function isWithinLab(userLat: number, userLon: number): boolean {
   return distance <= allowedRadius
 }
 
-/**
- * Check if the user's IP address belongs to the lab network.
- * Used as a fallback when GPS/geolocation is unavailable (e.g. indoors).
- */
 export function isLabNetwork(clientIp: string | null): boolean {
   if (!clientIp) return false
+
+  // Normalize IPv6-mapped IPv4 (e.g., ::ffff:192.168.1.1)
+  let normalizedIp = clientIp
+  if (normalizedIp.startsWith("::ffff:")) {
+    normalizedIp = normalizedIp.substring(7)
+  }
 
   const allowedIps = process.env.ALLOWED_LAB_IPS
   if (!allowedIps) {
@@ -51,8 +53,16 @@ export function isLabNetwork(clientIp: string | null): boolean {
     return false
   }
 
-  const ipList = allowedIps.split(",").map((ip) => ip.trim())
-  const isAllowed = ipList.includes(clientIp)
-  console.log(`IP check: ${clientIp} → ${isAllowed ? "allowed" : "denied"} (allowed: ${ipList.join(", ")})`)
+  const ipList = allowedIps.split(",").map((ip) => ip.trim()).filter(Boolean)
+  // Use startsWith to allow prefix matching (e.g., "131.112." will match "131.112.127.123")
+  const isAllowed = ipList.some((ip) => normalizedIp.startsWith(ip) || clientIp.startsWith(ip))
+  
+  // Local development bypass
+  if (process.env.NODE_ENV === "development" && (normalizedIp === "::1" || normalizedIp === "127.0.0.1")) {
+    console.log(`IP check: ${clientIp} → allowed (local development)`)
+    return true
+  }
+
+  console.log(`IP check: ${clientIp} (normalized: ${normalizedIp}) → ${isAllowed ? "allowed" : "denied"} (allowed: ${ipList.join(", ")})`)
   return isAllowed
 }

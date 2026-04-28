@@ -89,8 +89,10 @@ export async function POST(request: Request) {
   const hasCoords = isNumberInRange(latitude, -90, 90) && isNumberInRange(longitude, -180, 180)
 
   // Get client IP for fallback validation
-  const headersList = headers()
-  const clientIp = getClientIp(headersList)
+  const headersList = await headers()
+  const forwarded = headersList.get("x-forwarded-for")
+  const realIp = headersList.get("x-real-ip")
+  const clientIp = forwarded ? forwarded.split(",")[0].trim() : (realIp ? realIp.trim() : null)
 
   let verificationMethod: "GPS" | "IP" = "GPS"
 
