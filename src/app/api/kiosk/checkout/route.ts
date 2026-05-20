@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 
 import { prisma } from "@/lib/prisma"
 import { isLabNetwork } from "@/lib/location-validator"
+import { buildCheckOutMessage, sendSlackNotification } from "@/lib/slack"
 
 function getClientIp(headersList: { get(name: string): string | null }): string | null {
   for (const name of ["x-forwarded-for", "x-vercel-forwarded-for", "x-real-ip", "cf-connecting-ip"]) {
@@ -46,7 +47,10 @@ export async function POST(request: Request) {
   const todayCheckIn = await prisma.checkIn.findFirst({
     where: { userId: body.userId, time: { gte: dayStart, lt: nextDayStart } },
     orderBy: { time: "desc" },
-    select: { id: true, time: true, checkOutTime: true, status: true, pointsEarned: true },
+    select: {
+      id: true, time: true, checkOutTime: true, status: true, pointsEarned: true,
+      user: { select: { name: true } },
+    },
   })
 
   if (!todayCheckIn) {
@@ -62,6 +66,16 @@ export async function POST(request: Request) {
     data: { checkOutTime: now },
     select: { id: true, time: true, checkOutTime: true, status: true, pointsEarned: true },
   })
+
+  if (updatedCheckIn.checkOutTime) {
+    await sendSlackNotification(
+      buildCheckOutMessage({
+        userName: todayCheckIn.user?.name ?? null,
+        checkedOutAt: updatedCheckIn.checkOutTime,
+        isRemote: updatedCheckIn.status === "REMOTE",
+      })
+    )
+  }
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({

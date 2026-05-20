@@ -12,6 +12,7 @@ type CheckOutSuccessResponse = {
   success: true
   checkedOutAt: string
   taskSummaryText: string
+  slackNotified?: boolean
 }
 
 type CheckOutErrorResponse = {
@@ -72,10 +73,11 @@ export function CheckOutButton({
       const copied = await copySummaryToClipboard(data.taskSummaryText)
       setReportTextToCopy(data.taskSummaryText)
 
+      const slackSuffix = data.slackNotified ? " Slackに通知しました。" : ""
       if (copied) {
-        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。タスク概要をコピーしました。`)
+        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。タスク概要をコピーしました。${slackSuffix}`)
       } else {
-        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。`)
+        setMessage(`退勤を記録しました (${checkedOutTimeLabel})。${slackSuffix}`)
       }
 
       router.refresh()

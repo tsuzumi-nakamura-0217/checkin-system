@@ -15,6 +15,7 @@ type CheckInSuccessResponse = {
   targetTime: string
   checkedInAt: string
   taskSummaryText: string
+  slackNotified?: boolean
 }
 
 type CheckInErrorResponse = {
@@ -129,7 +130,8 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
 
       setMessage(
         `チェックイン完了: ${toStatusLabel(data.status)} (${toPointLabel(data.pointsEarned)}pt)` +
-        (copied ? "。報告をコピーしました。" : "")
+        (copied ? "。報告をコピーしました。" : "") +
+        (data.slackNotified ? " Slackに通知しました。" : "")
       )
       router.refresh()
     } catch (error) {
@@ -168,7 +170,9 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
       setReportTextToCopy(data.taskSummaryText)
 
       setMessage(
-        `在宅勤務チェックイン完了 (0pt)` + (copied ? "。報告をコピーしました。" : "")
+        `在宅勤務チェックイン完了 (0pt)` +
+        (copied ? "。報告をコピーしました。" : "") +
+        (data.slackNotified ? " Slackに通知しました。" : "")
       )
       router.refresh()
     } catch (error) {

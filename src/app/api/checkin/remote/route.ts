@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { markCommunityStreakNoCount } from "@/lib/community-utils"
 import { getCurrentUser } from "@/lib/current-user"
 import { markUserCheckInNoCount } from "@/lib/streak-utils"
+import { buildRemoteCheckInMessage, sendSlackNotification } from "@/lib/slack"
 
 function getTargetTimeForDate(
   date: Date,
@@ -63,6 +64,7 @@ export async function POST() {
     where: { id: currentUser.id },
     select: {
       id: true,
+      name: true,
       points: true,
       targetTimeMon: true,
       targetTimeTue: true,
@@ -185,6 +187,13 @@ export async function POST() {
     isRemote: true,
   })
 
+  const slackNotified = await sendSlackNotification(
+    buildRemoteCheckInMessage({
+      userName: user.name,
+      checkedInAt: now,
+    })
+  )
+
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
@@ -194,5 +203,6 @@ export async function POST() {
     targetTime,
     checkedInAt: now,
     taskSummaryText,
+    slackNotified,
   })
 }

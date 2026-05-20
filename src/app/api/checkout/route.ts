@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
 import { buildEveningReportText } from "@/lib/task-summary"
+import { buildCheckOutMessage, sendSlackNotification } from "@/lib/slack"
 
 export async function POST() {
   const currentUser = await getCurrentUser()
@@ -128,6 +129,17 @@ export async function POST() {
     isRemote: todayCheckIn.status === "REMOTE",
   })
 
+  let slackNotified = false
+  if (updatedCheckIn.checkOutTime) {
+    slackNotified = await sendSlackNotification(
+      buildCheckOutMessage({
+        userName: currentUser.name,
+        checkedOutAt: updatedCheckIn.checkOutTime,
+        isRemote: updatedCheckIn.status === "REMOTE",
+      })
+    )
+  }
+
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
@@ -137,5 +149,6 @@ export async function POST() {
     status: updatedCheckIn.status,
     pointsEarned: updatedCheckIn.pointsEarned,
     taskSummaryText,
+    slackNotified,
   })
 }

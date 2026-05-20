@@ -8,6 +8,7 @@ import { isWithinLab, getDistanceFromLatLonInM, isLabNetwork } from "@/lib/locat
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
 import { markUserCheckInNoCount, updateUserCheckInStreak } from "@/lib/streak-utils"
+import { buildCheckInMessage, sendSlackNotification } from "@/lib/slack"
 
 type CheckInRequestBody = {
   latitude?: unknown
@@ -172,6 +173,7 @@ export async function POST(request: Request) {
     where: { id: currentUser.id },
     select: {
       id: true,
+      name: true,
       points: true,
       targetTimeMon: true,
       targetTimeTue: true,
@@ -325,6 +327,15 @@ export async function POST(request: Request) {
     isRemote: false,
   })
 
+  const slackNotified = await sendSlackNotification(
+    buildCheckInMessage({
+      userName: user.name,
+      status,
+      pointsEarned: points,
+      checkedInAt: now,
+    })
+  )
+
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
     success: true,
@@ -334,5 +345,6 @@ export async function POST(request: Request) {
     targetTime,
     checkedInAt: now,
     taskSummaryText,
+    slackNotified,
   })
 }

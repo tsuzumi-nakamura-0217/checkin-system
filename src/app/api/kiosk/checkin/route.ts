@@ -7,6 +7,7 @@ import { isLabNetwork } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
 import { markUserCheckInNoCount, updateUserCheckInStreak } from "@/lib/streak-utils"
+import { buildCheckInMessage, sendSlackNotification } from "@/lib/slack"
 
 function getClientIp(headersList: { get(name: string): string | null }): string | null {
   for (const name of ["x-forwarded-for", "x-vercel-forwarded-for", "x-real-ip", "cf-connecting-ip"]) {
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
   const user = await prisma.user.findUnique({
     where: { id: body.userId },
     select: {
-      id: true, points: true,
+      id: true, name: true, points: true,
       targetTimeMon: true, targetTimeTue: true, targetTimeWed: true, targetTimeThu: true,
       targetTimeFri: true, targetTimeSat: true, targetTimeSun: true,
       checkInMon: true, checkInTue: true, checkInWed: true, checkInThu: true,
@@ -129,6 +130,15 @@ export async function POST(request: Request) {
     await updateCommunityStreak(user.id, "CHECKIN")
     await updateUserCheckInStreak(user.id, status)
   }
+
+  await sendSlackNotification(
+    buildCheckInMessage({
+      userName: user.name,
+      status,
+      pointsEarned: points,
+      checkedInAt: now,
+    })
+  )
 
   revalidatePath("/dashboard", "layout")
   return NextResponse.json({
