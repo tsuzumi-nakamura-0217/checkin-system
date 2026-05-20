@@ -38,6 +38,14 @@ export function isWithinLab(userLat: number, userLon: number): boolean {
   return distance <= allowedRadius
 }
 
+export function getClientIp(headersList: { get(name: string): string | null }): string | null {
+  for (const name of ["x-forwarded-for", "x-vercel-forwarded-for", "x-real-ip", "cf-connecting-ip", "true-client-ip"]) {
+    const val = headersList.get(name)
+    if (val) return val.split(",")[0]?.trim() ?? null
+  }
+  return null
+}
+
 export function isLabNetwork(clientIp: string | null): boolean {
   if (!clientIp) return false
 

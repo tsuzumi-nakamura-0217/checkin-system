@@ -87,19 +87,16 @@ function UserCard({ user, onTap }: { user: KioskUser; onTap: (user: KioskUser) =
   )
 }
 
-export function KioskClient({ kioskToken }: { kioskToken: string }) {
+export function KioskClient() {
   const [users, setUsers] = useState<KioskUser[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<ModalState>(null)
   const [isActing, setIsActing] = useState(false)
   const [clock, setClock] = useState("")
 
-  const kioskHeaders: Record<string, string> = { "Content-Type": "application/json" }
-  if (kioskToken) kioskHeaders["x-kiosk-token"] = kioskToken
-
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("/api/kiosk/users", { headers: kioskHeaders })
+      const res = await fetch("/api/kiosk/users")
       if (res.ok) {
         const data = await res.json() as { users: KioskUser[] }
         setUsers(data.users)
@@ -107,8 +104,7 @@ export function KioskClient({ kioskToken }: { kioskToken: string }) {
     } finally {
       setLoading(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kioskToken])
+  }, [])
 
   useEffect(() => {
     fetchUsers()
@@ -149,7 +145,7 @@ export function KioskClient({ kioskToken }: { kioskToken: string }) {
     try {
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: kioskHeaders,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id }),
       })
       const data = await res.json() as { success: boolean; error?: string; status?: string; pointsEarned?: number; checkedInAt?: string; checkedOutAt?: string }

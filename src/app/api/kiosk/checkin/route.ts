@@ -3,27 +3,11 @@ import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 
 import { prisma } from "@/lib/prisma"
-import { isLabNetwork } from "@/lib/location-validator"
+import { getClientIp, isLabNetwork } from "@/lib/location-validator"
 import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
 import { markUserCheckInNoCount, updateUserCheckInStreak } from "@/lib/streak-utils"
 import { buildCheckInMessage, sendSlackNotification } from "@/lib/slack"
-
-function getClientIp(headersList: { get(name: string): string | null }): string | null {
-  for (const name of ["x-forwarded-for", "x-vercel-forwarded-for", "x-real-ip", "cf-connecting-ip"]) {
-    const val = headersList.get(name)
-    if (val) return val.split(",")[0]?.trim() ?? null
-  }
-  return null
-}
-
-function isKioskAuthorized(request: Request, clientIp: string | null): boolean {
-  const kioskToken = process.env.KIOSK_TOKEN
-  if (kioskToken) {
-    return request.headers.get("x-kiosk-token") === kioskToken
-  }
-  return isLabNetwork(clientIp)
-}
 
 function getTargetTimeForDate(
   date: Date,
@@ -49,7 +33,7 @@ export async function POST(request: Request) {
   const headersList = await headers()
   const clientIp = getClientIp(headersList)
 
-  if (!isKioskAuthorized(request, clientIp)) {
+  if (!isLabNetwork(clientIp)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
