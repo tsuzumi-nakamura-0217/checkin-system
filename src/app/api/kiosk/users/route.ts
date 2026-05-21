@@ -26,7 +26,9 @@ export async function GET() {
     select: {
       id: true,
       name: true,
+      username: true,
       image: true,
+      customImage: true,
       points: true,
       checkIns: {
         where: {
@@ -48,8 +50,8 @@ export async function GET() {
     const checkIn = u.checkIns[0] ?? null
     return {
       id: u.id,
-      name: u.name,
-      image: u.image,
+      name: u.username ?? u.name,
+      image: u.customImage ?? u.image,
       points: u.points,
       todayStatus: checkIn
         ? checkIn.checkOutTime

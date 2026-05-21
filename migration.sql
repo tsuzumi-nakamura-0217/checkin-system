@@ -270,3 +270,7 @@ CREATE UNIQUE INDEX "CommunityCommentRead_commentId_userId_key" ON "CommunityCom
 -- CreateIndex
 CREATE UNIQUE INDEX "CommunityContribution_userId_goalId_key" ON "CommunityContribution"("userId", "goalId");
 
+-- AlterTable (added after initial migration)
+ALTER TABLE "User" ADD COLUMN "customImage" TEXT;
+ALTER TABLE "User" ADD COLUMN "username" TEXT;
+
