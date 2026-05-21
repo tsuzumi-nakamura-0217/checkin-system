@@ -6,7 +6,9 @@
       "Bash(sqlite3 prisma/dev.db \".schema User\")",
       "Bash(sqlite3 prisma/dev.db \"PRAGMA table_info\\(User\\);\")",
       "Bash(pkill -f \"next dev\")",
-      "Bash(sqlite3 *)"
+      "Bash(sqlite3 *)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts|jsx|js\\)$\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }

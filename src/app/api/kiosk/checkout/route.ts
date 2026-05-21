@@ -28,25 +28,40 @@ export async function POST(request: Request) {
   const dayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate, -9, 0, 0, 0))
   const nextDayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate + 1, -9, 0, 0, 0))
 
-  const todayCheckIn = await prisma.checkIn.findFirst({
-    where: { userId: body.userId, time: { gte: dayStart, lt: nextDayStart } },
-    orderBy: { time: "desc" },
-    select: {
-      id: true, time: true, checkOutTime: true, status: true, pointsEarned: true,
-      user: { select: { name: true } },
-    },
-  })
-
-  if (!todayCheckIn) {
-    return NextResponse.json({ success: false, error: "本日のチェックイン記録がありません。" }, { status: 404 })
+  const selectFields = {
+    id: true, time: true, checkOutTime: true, status: true, pointsEarned: true,
+    user: { select: { name: true } },
   }
 
-  if (todayCheckIn.checkOutTime) {
-    return NextResponse.json({ success: false, error: "本日の退勤は既に記録済みです。" }, { status: 409 })
+  let targetCheckIn = await prisma.checkIn.findFirst({
+    where: { userId: body.userId, time: { gte: dayStart, lt: nextDayStart } },
+    orderBy: { time: "desc" },
+    select: selectFields,
+  })
+
+  if (!targetCheckIn) {
+    const windowStart = new Date(dayStart.getTime() - 48 * 60 * 60 * 1000)
+    targetCheckIn = await prisma.checkIn.findFirst({
+      where: {
+        userId: body.userId,
+        checkOutTime: null,
+        time: { gte: windowStart, lt: dayStart },
+      },
+      orderBy: { time: "desc" },
+      select: selectFields,
+    })
+  }
+
+  if (!targetCheckIn) {
+    return NextResponse.json({ success: false, error: "チェックイン記録がありません。" }, { status: 404 })
+  }
+
+  if (targetCheckIn.checkOutTime) {
+    return NextResponse.json({ success: false, error: "退勤は既に記録済みです。" }, { status: 409 })
   }
 
   const updatedCheckIn = await prisma.checkIn.update({
-    where: { id: todayCheckIn.id },
+    where: { id: targetCheckIn.id },
     data: { checkOutTime: now },
     select: { id: true, time: true, checkOutTime: true, status: true, pointsEarned: true },
   })
@@ -54,7 +69,7 @@ export async function POST(request: Request) {
   if (updatedCheckIn.checkOutTime) {
     await sendSlackNotification(
       buildCheckOutMessage({
-        userName: todayCheckIn.user?.name ?? null,
+        userName: targetCheckIn.user?.name ?? null,
         checkedOutAt: updatedCheckIn.checkOutTime,
         isRemote: updatedCheckIn.status === "REMOTE",
       })

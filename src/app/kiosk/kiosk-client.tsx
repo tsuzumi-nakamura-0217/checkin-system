@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 
-type TodayStatus = "unchecked" | "checked_in" | "checked_out"
+type TodayStatus = "unchecked" | "checked_in" | "checked_out" | "overnight"
 
 type KioskUser = {
   id: string
@@ -18,6 +18,7 @@ type KioskUser = {
 
 type ModalState =
   | { type: "confirm"; user: KioskUser; action: "checkin" | "checkout" }
+  | { type: "overnight"; user: KioskUser }
   | { type: "result"; user: KioskUser; action: "checkin" | "checkout"; success: boolean; message: string }
   | null
 
@@ -50,6 +51,14 @@ function StatusBadge({ status }: { status: TodayStatus }) {
       </span>
     )
   }
+  if (status === "overnight") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">
+        <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+        前日から在室
+      </span>
+    )
+  }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-500">
       <span className="h-2 w-2 rounded-full bg-slate-400" />
@@ -78,6 +87,9 @@ function UserCard({ user, onTap }: { user: KioskUser; onTap: (user: KioskUser) =
         <StatusBadge status={user.todayStatus} />
         {user.todayStatus === "checked_in" && user.checkedInAt && (
           <p className="text-xs text-muted-foreground">{formatTime(user.checkedInAt)} 入室</p>
+        )}
+        {user.todayStatus === "overnight" && user.checkedInAt && (
+          <p className="text-xs text-muted-foreground">昨日 {formatTime(user.checkedInAt)} 入室</p>
         )}
         {user.todayStatus === "checked_out" && user.checkedOutAt && (
           <p className="text-xs text-muted-foreground">{formatTime(user.checkedInAt)} 〜 {formatTime(user.checkedOutAt)}</p>
@@ -132,15 +144,16 @@ export function KioskClient() {
       setModal({ type: "result", user, action: "checkout", success: true, message: "本日の勤務は完了しています。" })
       return
     }
+    if (user.todayStatus === "overnight") {
+      setModal({ type: "overnight", user })
+      return
+    }
     const action = user.todayStatus === "unchecked" ? "checkin" : "checkout"
     setModal({ type: "confirm", user, action })
   }
 
-  const handleAction = async () => {
-    if (!modal || modal.type !== "confirm") return
-    const { user, action } = modal
+  const executeAction = useCallback(async (user: KioskUser, action: "checkin" | "checkout") => {
     setIsActing(true)
-
     const endpoint = action === "checkin" ? "/api/kiosk/checkin" : "/api/kiosk/checkout"
     try {
       const res = await fetch(endpoint, {
@@ -164,6 +177,16 @@ export function KioskClient() {
     } finally {
       setIsActing(false)
     }
+  }, [fetchUsers])
+
+  const handleAction = async () => {
+    if (!modal || modal.type !== "confirm") return
+    await executeAction(modal.user, modal.action)
+  }
+
+  const handleOvernightAction = async (action: "checkin" | "checkout") => {
+    if (!modal || modal.type !== "overnight") return
+    await executeAction(modal.user, action)
   }
 
   const closeModal = () => setModal(null)
@@ -266,6 +289,57 @@ export function KioskClient() {
                         処理中...
                       </span>
                     ) : modal.action === "checkin" ? "チェックイン" : "退勤する"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {modal.type === "overnight" && (
+              <>
+                <p className="text-center text-base text-muted-foreground mb-1">
+                  前日 {formatTime(modal.user.checkedInAt)} からのチェックインが残っています
+                </p>
+                <p className="text-center text-sm text-muted-foreground mb-6">どちらの操作をしますか？</p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOvernightAction("checkout")}
+                    disabled={isActing}
+                    className="w-full rounded-xl bg-sky-500 hover:bg-sky-600 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isActing ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        処理中...
+                      </span>
+                    ) : "退勤する（前日の退勤処理）"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOvernightAction("checkin")}
+                    disabled={isActing}
+                    className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {isActing ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        処理中...
+                      </span>
+                    ) : "出勤する（前日の退勤し忘れを無視）"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    disabled={isActing}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                  >
+                    キャンセル
                   </button>
                 </div>
               </>

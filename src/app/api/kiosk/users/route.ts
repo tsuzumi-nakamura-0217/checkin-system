@@ -20,6 +20,7 @@ export async function GET() {
   const jstDate = nowJST.getUTCDate()
   const dayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate, -9, 0, 0, 0))
   const nextDayStart = new Date(Date.UTC(jstYear, jstMonth, jstDate + 1, -9, 0, 0, 0))
+  const windowStart = new Date(dayStart.getTime() - 48 * 60 * 60 * 1000)
 
   const users = await prisma.user.findMany({
     where: { role: "USER" },
@@ -32,7 +33,7 @@ export async function GET() {
       points: true,
       checkIns: {
         where: {
-          time: { gte: dayStart, lt: nextDayStart },
+          time: { gte: windowStart, lt: nextDayStart },
         },
         select: {
           time: true,
@@ -40,24 +41,36 @@ export async function GET() {
           status: true,
           pointsEarned: true,
         },
-        take: 1,
+        orderBy: { time: "desc" },
+        take: 2,
       },
     },
     orderBy: { name: "asc" },
   })
 
   const result = users.map((u) => {
-    const checkIn = u.checkIns[0] ?? null
+    const todayCheckIn = u.checkIns.find((c) => c.time >= dayStart) ?? null
+    const overnightCheckIn = !todayCheckIn
+      ? (u.checkIns.find((c) => !c.checkOutTime) ?? null)
+      : null
+
+    const checkIn = todayCheckIn ?? overnightCheckIn
+
+    let todayStatus: "unchecked" | "checked_in" | "checked_out" | "overnight"
+    if (todayCheckIn) {
+      todayStatus = todayCheckIn.checkOutTime ? "checked_out" : "checked_in"
+    } else if (overnightCheckIn) {
+      todayStatus = "overnight"
+    } else {
+      todayStatus = "unchecked"
+    }
+
     return {
       id: u.id,
       name: u.username ?? u.name,
       image: u.customImage ?? u.image,
       points: u.points,
-      todayStatus: checkIn
-        ? checkIn.checkOutTime
-          ? "checked_out"
-          : "checked_in"
-        : "unchecked",
+      todayStatus,
       checkedInAt: checkIn?.time ?? null,
       checkedOutAt: checkIn?.checkOutTime ?? null,
       checkInStatus: checkIn?.status ?? null,
