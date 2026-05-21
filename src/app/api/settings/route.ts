@@ -17,6 +17,7 @@ export async function GET() {
       where: { id: currentUser.id },
       select: {
         id: true,
+        username: true,
         targetTimeMon: true,
         targetTimeTue: true,
         targetTimeWed: true,
@@ -61,8 +62,8 @@ export async function PATCH(req: Request) {
 
     const body = await req.json()
     
-    // 必要なフィールドだけを抽出してアップデートする
     const updateData = {
+      username: body.username ?? undefined,
       targetTimeMon: body.targetTimeMon,
       targetTimeTue: body.targetTimeTue,
       targetTimeWed: body.targetTimeWed,

@@ -1,5 +1,6 @@
 import { SettingsForm } from "@/components/settings-form"
 import { AiGoogleSettings } from "@/components/ai-google-settings"
+import { AvatarUpload } from "@/components/avatar-upload"
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/current-user"
 
@@ -16,6 +17,13 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <AvatarUpload
+          currentImage={currentUser.customImage}
+          googleImage={currentUser.image}
+        />
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

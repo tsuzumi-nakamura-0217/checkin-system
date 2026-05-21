@@ -7,7 +7,9 @@ import { prisma } from "@/lib/prisma"
 type CurrentUser = {
   id: string
   name: string | null
+  username: string | null
   image: string | null
+  customImage: string | null
   mode: "auth" | "dev-bypass"
 }
 
@@ -19,10 +21,16 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const session = await getServerSession(authOptions)
 
   if (session?.user?.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { customImage: true, username: true },
+    })
     return {
       id: session.user.id,
       name: session.user.name ?? null,
+      username: dbUser?.username ?? null,
       image: session.user.image ?? null,
+      customImage: dbUser?.customImage ?? null,
       mode: "auth",
     }
   }
@@ -46,13 +54,17 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       id: true,
       name: true,
       image: true,
+      customImage: true,
+      username: true,
     },
   })
 
   return {
     id: user.id,
     name: user.name,
+    username: user.username ?? null,
     image: user.image,
+    customImage: user.customImage ?? null,
     mode: "dev-bypass",
   }
 })

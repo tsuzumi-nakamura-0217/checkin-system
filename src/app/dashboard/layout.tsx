@@ -1,4 +1,3 @@
-import Image from "next/image"
 import { redirect } from "next/navigation"
 
 import { AiChatFab } from "@/components/ai-chat-fab"
@@ -57,12 +56,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
           <div className="mt-auto pt-4">
             <LogoutButton className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-all hover:shadow-themed hover:border-primary/20 active:scale-[0.98]">
               <div className="relative">
-                {currentUser.image ? (
-                  <Image
-                    src={currentUser.image}
+                {(currentUser.customImage || currentUser.image) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={currentUser.customImage ?? currentUser.image!}
                     alt="プロフィール画像"
-                    width={36}
-                    height={36}
                     className="h-9 w-9 rounded-xl border-2 border-primary/20 object-cover"
                   />
                 ) : (
@@ -74,7 +72,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-foreground">{currentUser.name || "ユーザー"}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{currentUser.username || currentUser.name || "ユーザー"}</p>
                 <p className="text-[11px] text-muted-foreground">ログアウト</p>
               </div>
               {currentUser.mode === "dev-bypass" ? (
@@ -104,12 +102,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
                   </div>
                 </div>
                 <LogoutButton className="h-9 w-9 cursor-pointer rounded-xl overflow-hidden border-2 border-primary/20 shadow-sm transition-transform hover:scale-105 active:scale-95">
-                  {currentUser.image ? (
-                    <Image
-                      src={currentUser.image}
+                  {(currentUser.customImage || currentUser.image) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentUser.customImage ?? currentUser.image!}
                       alt="プロフィール画像"
-                      width={36}
-                      height={36}
                       className="h-full w-full object-cover"
                     />
                   ) : (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 
 type UserSettings = {
+  username: string | null
   targetTimeMon: string
   targetTimeTue: string
   targetTimeWed: string
@@ -114,6 +115,24 @@ export function SettingsForm() {
           {message.text}
         </div>
       )}
+
+      {/* ユーザーネーム */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex flex-col">
+            <span className="text-[15px] font-medium text-foreground">ユーザーネーム</span>
+            <span className="text-[13px] text-muted-foreground">Googleアカウント名の代わりに表示される名前</span>
+          </div>
+          <input
+            type="text"
+            value={settings.username ?? ""}
+            onChange={(e) => setSettings((prev) => prev ? { ...prev, username: e.target.value || null } : prev)}
+            placeholder="未設定（Googleアカウント名を使用）"
+            maxLength={50}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring sm:w-64"
+          />
+        </div>
+      </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <ul className="divide-y divide-border">
