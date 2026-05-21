@@ -29,6 +29,8 @@ export default async function DashboardHistoryPage() {
     redirect("/login")
   }
 
+  const { stats } = data
+
   return (
     <section className="space-y-5 animate-fade-in">
       <div className="flex items-center gap-3">
@@ -39,6 +41,39 @@ export default async function DashboardHistoryPage() {
         </div>
         <h2>履歴</h2>
       </div>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">合計</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.total}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">チェックイン回数</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">獲得pt</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.totalPoints.toLocaleString("ja-JP")}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">累計ポイント</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">時間内率</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.onTimeRate}<span className="ml-0.5 text-sm font-semibold text-muted-foreground">%</span></p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">早着+時間内（在宅除く）</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-accent uppercase">早着</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.earlyCount}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">回</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-primary uppercase">時間内</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.onTimeCount}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">回</p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
+          <p className="text-[10px] font-bold tracking-[0.15em] text-destructive uppercase">遅刻</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.lateCount}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">回 / 在宅 {stats.remoteCount}回</p>
+        </div>
+      </section>
 
       <section className="rounded-2xl border border-border bg-card shadow-themed overflow-hidden">
         {data.recentCheckIns.length === 0 ? (
@@ -52,10 +87,10 @@ export default async function DashboardHistoryPage() {
             <p className="mt-1 text-xs text-muted-foreground">チェックインを記録すると、ここに表示されます。</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[70vh] overflow-auto">
             <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-secondary/50 text-left">
+              <thead className="sticky top-0 z-10 bg-secondary/95 backdrop-blur">
+                <tr className="border-b border-border text-left">
                   <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">日時</th>
                   <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">ステータス</th>
                   <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">ポイント</th>
@@ -68,6 +103,7 @@ export default async function DashboardHistoryPage() {
                   <tr key={item.time.toISOString()} className={`border-b border-border/50 text-foreground transition-colors hover:bg-secondary/30 ${index % 2 === 0 ? "" : "bg-secondary/10"}`}>
                     <td className="px-4 py-3 font-medium tabular-nums">
                       {new Intl.DateTimeFormat("ja-JP", {
+                        year: "2-digit",
                         month: "2-digit",
                         day: "2-digit",
                         hour: "2-digit",

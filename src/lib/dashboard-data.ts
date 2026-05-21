@@ -330,15 +330,47 @@ export async function getTasksData(userId: string) {
   return { tasks }
 }
 
+export type HistoryStats = {
+  total: number
+  earlyCount: number
+  onTimeCount: number
+  lateCount: number
+  remoteCount: number
+  totalPoints: number
+  onTimeRate: number
+}
+
 export async function getHistoryData(userId: string) {
   const recentCheckIns = await prisma.checkIn.findMany({
     where: { userId },
     orderBy: { time: "desc" },
-    take: 30,
     select: { time: true, checkOutTime: true, pointsEarned: true, status: true, targetTime: true },
   })
 
-  return { recentCheckIns }
+  const stats: HistoryStats = {
+    total: recentCheckIns.length,
+    earlyCount: 0,
+    onTimeCount: 0,
+    lateCount: 0,
+    remoteCount: 0,
+    totalPoints: 0,
+    onTimeRate: 0,
+  }
+
+  for (const item of recentCheckIns) {
+    stats.totalPoints += item.pointsEarned
+    if (item.status === "EARLY") stats.earlyCount += 1
+    else if (item.status === "ON_TIME") stats.onTimeCount += 1
+    else if (item.status === "LATE") stats.lateCount += 1
+    else if (item.status === "REMOTE") stats.remoteCount += 1
+  }
+
+  const onTimeBase = stats.total - stats.remoteCount
+  stats.onTimeRate = onTimeBase > 0
+    ? Math.round(((stats.earlyCount + stats.onTimeCount) / onTimeBase) * 100)
+    : 0
+
+  return { recentCheckIns, stats }
 }
 
 export async function getCalendarData(userId: string, weekParam?: string | string[]) {
