@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 
 import { TodayTaskReportButton } from "@/components/today-task-report-button"
 import { WeekCalendar } from "@/components/week-calendar"
+import { TagManager } from "@/components/tag-manager"
 import { getCalendarData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { toDayKey } from "@/lib/calendar-utils"
@@ -64,6 +65,10 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
                 </svg>
               </Link>
             </div>
+            <TagManager
+              tags={data.allTags}
+              triggerClassName="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground shadow-sm transition-all hover:bg-secondary"
+            />
             <TodayTaskReportButton todayTasks={data.todayTasks} checkedInTimeLabel={data.checkedInTimeLabel} isRemote={data.isRemoteCheckIn} />
           </div>
         </div>
@@ -73,6 +78,7 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
         weekStartIso={data.weekStart.toISOString()}
         tasks={data.calendarTasks}
         checkIns={data.calendarCheckIns}
+        allTags={data.allTags}
       />
     </section>
   )

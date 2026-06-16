@@ -17,7 +17,11 @@ import type { TagItem } from "@/components/tag-badge"
 
 type TagManagerProps = {
   tags: TagItem[]
+  triggerClassName?: string
 }
+
+const DEFAULT_TRIGGER_CLASS =
+  "h-11 w-full sm:w-auto rounded-xl border-border px-5 text-sm font-bold shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2"
 
 type TagMutationResponse =
   | { success: true; tag: TagItem }
@@ -47,7 +51,7 @@ function ColorDots({
   )
 }
 
-export function TagManager({ tags }: TagManagerProps) {
+export function TagManager({ tags, triggerClassName }: TagManagerProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [list, setList] = useState<TagItem[]>(tags)
@@ -169,7 +173,7 @@ export function TagManager({ tags }: TagManagerProps) {
         render={
           <Button
             variant="outline"
-            className="h-11 w-full sm:w-auto rounded-xl border-border px-5 text-sm font-bold shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2"
+            className={triggerClassName ?? DEFAULT_TRIGGER_CLASS}
           >
             <Tags className="h-4 w-4" />
             タグを管理

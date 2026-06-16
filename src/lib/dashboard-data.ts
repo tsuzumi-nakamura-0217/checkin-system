@@ -399,10 +399,13 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
   const { weekStart, weekEnd } = getWeekBoundaries(weekParam)
   const { dayStart, nextDayStart } = getTodayBoundaries()
 
-  const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks, todayCheckIn] = await Promise.all([
+  const [tasks, weeklyCheckIns, weeklyDoneTasks, allTasks, todayCheckIn, allTags] = await Promise.all([
     prisma.task.findMany({
       where: { userId, startAt: { lt: weekEnd }, endAt: { gte: weekStart } },
-      select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
+      select: {
+        id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true,
+        taskTags: { select: { tag: { select: { id: true, name: true, color: true } } } },
+      },
     }),
     prisma.checkIn.findMany({
       where: { userId, time: { gte: weekStart, lt: weekEnd } },
@@ -421,6 +424,11 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
       where: { userId, time: { gte: dayStart, lt: nextDayStart } },
       orderBy: { time: "desc" },
       select: { time: true, status: true },
+    }),
+    prisma.tag.findMany({
+      where: { userId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, color: true },
     }),
   ])
 
@@ -446,6 +454,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     pointsEarned: task.pointsEarned,
     startAt: task.startAt ? task.startAt.toISOString() : null,
     endAt: task.endAt ? task.endAt.toISOString() : null,
+    tags: task.taskTags.map((taskTag) => taskTag.tag),
   }))
 
   const calendarCheckIns = weeklyCheckIns.map((checkIn) => ({
@@ -465,6 +474,7 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
     nextWeek,
     calendarTasks,
     calendarCheckIns,
+    allTags,
     todayTasks,
     weeklyCheckInPoints: weeklyCheckIns.reduce((sum, item) => sum + item.pointsEarned, 0),
     weeklyTaskPoints: weeklyDoneTasks.reduce(

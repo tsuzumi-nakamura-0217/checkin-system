@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation"
 
 import { formatTimeLabel, toDayKey } from "@/lib/calendar-utils"
 import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
+import { getTagColorPreset } from "@/lib/tags"
+import { TagPicker } from "@/components/tag-picker"
+import type { TagItem } from "@/components/tag-badge"
 
 type CalendarTask = {
   id: string
@@ -15,6 +18,7 @@ type CalendarTask = {
   pointsEarned: number | null
   startAt: string | null
   endAt: string | null
+  tags: TagItem[]
 }
 
 type ScheduledCalendarTask = CalendarTask & {
@@ -33,6 +37,7 @@ type WeekCalendarProps = {
   weekStartIso: string
   tasks: CalendarTask[]
   checkIns: CalendarCheckIn[]
+  allTags: TagItem[]
 }
 
 type SlotPointer = {
@@ -126,7 +131,7 @@ function getCurrentTimePosition(dayDate: Date, startHour: number, totalMinutes: 
   return minutesFromStart * PX_PER_MINUTE
 }
 
-export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProps) {
+export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCalendarProps) {
   const router = useRouter()
   const suppressNextTaskClickRef = useRef(false)
   const suppressPostDragClickRef = useRef(false)
@@ -199,6 +204,9 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
 
   const [localTasks, setLocalTasks] = useState<CalendarTask[]>(tasks)
   useEffect(() => { setLocalTasks(tasks) }, [tasks])
+  const [availableTags, setAvailableTags] = useState<TagItem[]>(allTags)
+  useEffect(() => { setAvailableTags(allTags) }, [allTags])
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
 
   const weekStart = useMemo(() => new Date(weekStartIso), [weekStartIso])
 
@@ -262,6 +270,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
   const closeModal = () => {
     setSelectedRange(null); setEditingTask(null); setTitle(""); setDescription("")
     setStatus("TODO"); setStartAtInput(""); setEndAtInput("")
+    setSelectedTagIds([])
     setIsDeleting(false); setMessage(null); setIsError(false)
   }
 
@@ -271,6 +280,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     setTitle(task.title); setDescription(task.description ?? "")
     setStatus(task.status === "DONE" ? "DONE" : "TODO")
     setStartAtInput(toDateTimeLocalValue(task.startDate)); setEndAtInput(toDateTimeLocalValue(task.endDate))
+    setSelectedTagIds(task.tags.map((tag) => tag.id))
     setMessage(null); setIsError(false)
   }
 
@@ -358,7 +368,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (parsedEndAt <= parsedStartAt) { setIsError(true); setMessage("終了時刻は開始時刻より後にしてください。"); return }
     setIsSubmitting(true); setMessage(null); setIsError(false)
     try {
-      const updateResponse = await fetch(`/api/tasks/${editingTask.taskId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: parsedStartAt.toISOString(), endAt: parsedEndAt.toISOString() }) })
+      const updateResponse = await fetch(`/api/tasks/${editingTask.taskId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: parsedStartAt.toISOString(), endAt: parsedEndAt.toISOString(), tagIds: selectedTagIds }) })
       const updateData = (await updateResponse.json().catch(() => null)) as { success: true } | { success: false; error?: string } | null
       if (!updateResponse.ok || !updateData?.success) { const errorText = updateData && !updateData.success ? updateData.error : "タスク更新に失敗しました。"; throw new Error(errorText || "タスク更新に失敗しました。") }
       if (status !== editingTask.originalStatus) {
@@ -390,7 +400,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
     if (!title.trim()) { setIsError(true); setMessage("タスク名は必須です。"); return }
     setIsSubmitting(true); setMessage(null); setIsError(false)
     try {
-      const response = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: selectedRange.startAt.toISOString(), endAt: selectedRange.endAt.toISOString() }) })
+      const response = await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, description, startAt: selectedRange.startAt.toISOString(), endAt: selectedRange.endAt.toISOString(), tagIds: selectedTagIds }) })
       const data = (await response.json().catch(() => null)) as { success: true } | { success: false; error?: string } | null
       if (!response.ok || !data?.success) { const errorText = data && !data.success ? data.error : "タスク作成に失敗しました。"; throw new Error(errorText || "タスク作成に失敗しました。") }
       closeModal(); router.refresh()
@@ -631,6 +641,13 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                           </button>
                           <div className="min-w-0 flex-1">
                             <p className={`truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
+                            {task.tags.length > 0 && (
+                              <div className="mt-0.5 flex items-center gap-0.5">
+                                {task.tags.slice(0, 4).map((tag) => (
+                                  <span key={tag.id} className={`size-1.5 flex-shrink-0 rounded-full ${getTagColorPreset(tag.color).dot}`} title={tag.name} />
+                                ))}
+                              </div>
+                            )}
                             {height >= 36 && <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground/50 tabular-nums">{toDurationLabel(task.startDate, task.endDate)}</p>}
                           </div>
                         </div>
@@ -686,6 +703,15 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
               <div className="space-y-1.5">
                 <label htmlFor="calendar-task-description" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細（任意）</label>
                 <textarea id="calendar-task-description" value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-20 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20" maxLength={300} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ（任意）</label>
+                <TagPicker
+                  tags={availableTags}
+                  selectedIds={selectedTagIds}
+                  onSelectedChange={setSelectedTagIds}
+                  onTagCreated={(tag) => setAvailableTags((prev) => [...prev, tag])}
+                />
               </div>
               {editingTask ? (
                 <div className="grid gap-4 sm:grid-cols-2">
