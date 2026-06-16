@@ -44,7 +44,7 @@ export function AiChatFab() {
         aria-label="AIチャットを開く"
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed right-4 bottom-20 z-68 flex h-13 items-center gap-2 rounded-full border border-primary/35 gradient-primary px-4 text-sm font-semibold text-primary-foreground shadow-themed-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] lg:right-6 lg:bottom-6",
+          "fixed right-4 bottom-20 z-68 flex h-14 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-frap transition-all duration-200 hover:scale-[1.02] active:scale-[0.95] lg:right-6 lg:bottom-6",
           open ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"
         )}
       >
@@ -62,7 +62,7 @@ export function AiChatFab() {
           type="button"
           aria-label="AIチャットを閉じる"
           onClick={() => setOpen(false)}
-          className="absolute inset-0 bg-foreground/18 backdrop-blur-[1px]"
+          className="absolute inset-0 bg-black/30"
         />
       </div>
 

@@ -12,7 +12,7 @@ function getStatusBadgeClass(status: string): string {
   if (status === "EARLY") return "bg-accent/10 text-accent"
   if (status === "LATE") return "bg-destructive/10 text-destructive"
   if (status === "ON_TIME") return "bg-primary/10 text-primary"
-  if (status === "REMOTE") return "bg-amber-100 text-amber-700"
+  if (status === "REMOTE") return "bg-brand-uplift/10 text-brand-uplift"
   return "bg-muted text-muted-foreground"
 }
 
@@ -89,7 +89,7 @@ export default async function DashboardHistoryPage() {
         ) : (
           <div className="max-h-[70vh] overflow-auto">
             <table className="min-w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-secondary/95 backdrop-blur">
+              <thead className="sticky top-0 z-10 bg-secondary">
                 <tr className="border-b border-border text-left">
                   <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">日時</th>
                   <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">ステータス</th>

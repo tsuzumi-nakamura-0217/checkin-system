@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Trash2 } from "lucide-react"
 
@@ -19,6 +19,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { TagPicker } from "@/components/tag-picker"
+import { TagBadge, type TagItem } from "@/components/tag-badge"
 
 type Task = {
   id: string
@@ -29,20 +31,29 @@ type Task = {
   startAt: Date | null
   endAt: Date | null
   pointsEarned: number | null
+  tags: TagItem[]
 }
 
 type TaskCardProps = {
   task: Task
+  allTags: TagItem[]
 }
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, allTags }: TaskCardProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  
+
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description || "")
+  const [availableTags, setAvailableTags] = useState<TagItem[]>(allTags)
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(task.tags.map((tag) => tag.id))
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 他の画面でタグ一覧が変わったら同期する
+  useEffect(() => {
+    setAvailableTags(allTags)
+  }, [allTags])
 
   const estimatedHours = calculateEstimatedHoursFromRange(task.startAt, task.endAt)
 
@@ -53,7 +64,7 @@ export function TaskCard({ task }: TaskCardProps) {
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description })
+        body: JSON.stringify({ title, description, tagIds: selectedTagIds })
       })
 
       if (response.ok) {
@@ -100,6 +111,7 @@ export function TaskCard({ task }: TaskCardProps) {
       setTimeout(() => {
         setTitle(task.title)
         setDescription(task.description || "")
+        setSelectedTagIds(task.tags.map((tag) => tag.id))
       }, 300)
     }
     setIsOpen(open)
@@ -131,6 +143,14 @@ export function TaskCard({ task }: TaskCardProps) {
             </div>
 
             {task.description ? <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p> : null}
+
+            {task.tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {task.tags.map((tag) => (
+                  <TagBadge key={tag.id} tag={tag} />
+                ))}
+              </div>
+            ) : null}
 
             {task.startAt && task.endAt ? (
               <p className="text-[11px] text-muted-foreground tabular-nums">{`予定: ${formatTaskRange(task.startAt, task.endAt)}`}</p>
@@ -177,7 +197,17 @@ export function TaskCard({ task }: TaskCardProps) {
               maxLength={300}
             />
           </div>
-          
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ</Label>
+            <TagPicker
+              tags={availableTags}
+              selectedIds={selectedTagIds}
+              onSelectedChange={setSelectedTagIds}
+              onTagCreated={(tag) => setAvailableTags((prev) => [...prev, tag])}
+            />
+          </div>
+
           <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
             <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間</Label>
             <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">

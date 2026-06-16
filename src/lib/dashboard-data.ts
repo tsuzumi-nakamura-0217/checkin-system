@@ -315,19 +315,41 @@ export async function getOverviewData(userId: string) {
 }
 
 export async function getTasksData(userId: string) {
-  const tasksRaw = await prisma.task.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
-  })
+  const [tasksRaw, allTags] = await Promise.all([
+    prisma.task.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        status: true,
+        pointsEarned: true,
+        startAt: true,
+        endAt: true,
+        completedAt: true,
+        createdAt: true,
+        taskTags: {
+          select: { tag: { select: { id: true, name: true, color: true } } },
+        },
+      },
+    }),
+    prisma.tag.findMany({
+      where: { userId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, color: true },
+    }),
+  ])
 
-  const tasks = tasksRaw.map((task) => ({
+  const tasks = tasksRaw.map(({ taskTags, ...task }) => ({
     ...task,
     estimatedHours: calculateEstimatedHoursFromRange(task.startAt, task.endAt) ?? 0,
+    tags: taskTags.map((taskTag) => taskTag.tag),
   }))
 
-  return { tasks }
+  return { tasks, allTags }
 }
 
 export type HistoryStats = {

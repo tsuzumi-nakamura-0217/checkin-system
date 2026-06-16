@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
+import { TagPicker } from "@/components/tag-picker"
+import type { TagItem } from "@/components/tag-badge"
 
 type CreateTaskSuccessResponse = {
   success: true
@@ -25,16 +27,27 @@ type CreateTaskErrorResponse = {
   error: string
 }
 
-export function TaskCreateForm() {
+type TaskCreateFormProps = {
+  allTags: TagItem[]
+}
+
+export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [startAt, setStartAt] = useState("")
   const [endAt, setEndAt] = useState("")
+  const [tags, setTags] = useState<TagItem[]>(allTags)
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [isError, setIsError] = useState(false)
+
+  // 他の画面（タグ管理など）でタグ一覧が変わったら同期する
+  useEffect(() => {
+    setTags(allTags)
+  }, [allTags])
 
   const estimatedHours = calculateEstimatedHoursFromRange(
     startAt ? new Date(startAt) : null,
@@ -65,6 +78,7 @@ export function TaskCreateForm() {
           description,
           startAt: startAt ? new Date(startAt).toISOString() : null,
           endAt: endAt ? new Date(endAt).toISOString() : null,
+          tagIds: selectedTagIds,
         }),
       })
 
@@ -79,6 +93,7 @@ export function TaskCreateForm() {
       setDescription("")
       setStartAt("")
       setEndAt("")
+      setSelectedTagIds([])
       setMessage("タスクを追加しました。")
       router.refresh()
       setIsOpen(false)
@@ -127,6 +142,16 @@ export function TaskCreateForm() {
               className="min-h-20 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
               placeholder="メモがあれば入力"
               maxLength={300}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ（任意）</Label>
+            <TagPicker
+              tags={tags}
+              selectedIds={selectedTagIds}
+              onSelectedChange={setSelectedTagIds}
+              onTagCreated={(tag) => setTags((prev) => [...prev, tag])}
             />
           </div>
 

@@ -8,8 +8,9 @@ export function LoginForm() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
-      <div className="relative z-10 w-full max-w-sm space-y-6 rounded-3xl border border-border/70 bg-card/90 p-8 shadow-xl shadow-primary/10 backdrop-blur-2xl sm:px-10">
+      <div className="relative z-10 w-full max-w-sm space-y-6 rounded-[12px] border border-border/70 bg-card p-8 shadow-[var(--shadow-nav)] sm:px-10">
         <div className="space-y-2 text-center">
+          <p className="text-xs font-semibold tracking-[0.18em] text-brand-green uppercase">Lab Checkin System</p>
           <h1 className="text-3xl font-semibold tracking-tight">ログイン</h1>
           <p className="text-sm text-muted-foreground">
             研究室へのチェックインを開始します
@@ -42,7 +43,7 @@ export function LoginForm() {
           </button>
 
         {devBypassEnabled ? (
-          <div className="space-y-2 rounded-xl border border-border/70 bg-background/70 px-4 py-3">
+          <div className="space-y-2 rounded-[12px] border border-border/70 bg-muted px-4 py-3">
             <p className="text-xs font-medium text-muted-foreground">開発モード: Google認証をスキップできます</p>
             <Link
               href="/dashboard/overview"

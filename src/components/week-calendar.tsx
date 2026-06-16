@@ -621,7 +621,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
                           setTaskDragContext({ taskId: task.id, durationSlots, initialDayIndex: day.index, initialSlotIndex })
                           setTaskDragCurrent({ dayIndex: day.index, slotIndex: initialSlotIndex })
                         }}
-                        className={`pointer-events-auto absolute left-1.5 right-1.5 z-40 cursor-pointer overflow-hidden rounded-[10px] border-l-[3px] shadow-sm transition-all duration-200 hover:shadow-themed hover:-translate-y-0.5 hover:brightness-[1.02] ${isDone ? "border-l-[var(--task-done-bar)] border border-accent/20 bg-gradient-to-r from-accent/[0.06] to-accent/[0.02]" : "border-l-[var(--task-todo-bar)] border border-primary/15 bg-gradient-to-r from-primary/[0.06] to-card"} ${isGhost ? "opacity-25 scale-95" : ""}`}
+                        className={`pointer-events-auto absolute left-1.5 right-1.5 z-40 cursor-pointer overflow-hidden rounded-[10px] border-l-[3px] shadow-sm transition-all duration-200 hover:shadow-themed hover:-translate-y-0.5 hover:brightness-[1.02] ${isDone ? "border-l-[var(--task-done-bar)] border border-accent/20 bg-accent/[0.06]" : "border-l-[var(--task-todo-bar)] border border-primary/15 bg-primary/[0.06]"} ${isGhost ? "opacity-25 scale-95" : ""}`}
                         style={{ top, height }}
                       >
                         <button type="button" data-resize-handle="true" aria-label="開始時刻を調整" className="absolute inset-x-1 -top-1 z-20 h-2.5 cursor-ns-resize rounded-full bg-transparent" onClick={(e) => { e.preventDefault(); e.stopPropagation() }} onMouseDown={(event) => { if (event.button !== 0) return; event.preventDefault(); event.stopPropagation(); suppressNextTaskClickRef.current = true; suppressPostDragClickRef.current = true; const ss = clamp(Math.floor(startMinute / SLOT_MINUTES), 0, slotCount - 1); const es = clamp(Math.ceil(endMinute / SLOT_MINUTES), ss + 1, slotCount); setTaskResizeContext({ taskId: task.id, edge: "start", dayIndex: day.index, initialStartSlot: ss, initialEndSlot: es }); setTaskResizeCurrent({ dayIndex: day.index, slotIndex: ss }) }} />
@@ -672,7 +672,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns }: WeekCalendarProp
       {/* Modal */}
       {selectedRange || editingTask ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <button type="button" className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={closeModal} aria-label="close-modal-bg" />
+          <button type="button" className="absolute inset-0 bg-black/30" onClick={closeModal} aria-label="close-modal-bg" />
           <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
             <div className="mb-5">
               <p className="text-lg font-bold tracking-tight text-foreground">{editingTask ? "タスクを編集" : "タスクを作成"}</p>

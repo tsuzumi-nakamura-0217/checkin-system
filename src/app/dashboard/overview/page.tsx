@@ -24,7 +24,7 @@ function getGreeting(): string {
 }
 
 function getRankBadge(rank: number) {
-  if (rank === 1) return { emoji: "🥇", color: "text-yellow-500", bg: "bg-yellow-500/10", border: "border-yellow-500/20" }
+  if (rank === 1) return { emoji: "🥇", color: "text-gold", bg: "bg-gold/10", border: "border-gold/20" }
   if (rank === 2) return { emoji: "🥈", color: "text-gray-400", bg: "bg-gray-400/10", border: "border-gray-400/20" }
   if (rank === 3) return { emoji: "🥉", color: "text-orange-400", bg: "bg-orange-400/10", border: "border-orange-400/20" }
   return { emoji: `${rank}`, color: "text-muted-foreground", bg: "bg-muted/50", border: "border-border" }
@@ -34,7 +34,7 @@ function getStatusBadge(status: string | null) {
   if (status === "ON_TIME") return { label: "時間内", className: "bg-accent/10 text-accent border-accent/20" }
   if (status === "EARLY") return { label: "早着", className: "bg-blue-500/10 text-blue-500 border-blue-500/20" }
   if (status === "LATE") return { label: "遅刻", className: "bg-destructive/10 text-destructive border-destructive/20" }
-  if (status === "REMOTE") return { label: "在宅", className: "bg-purple-500/10 text-purple-500 border-purple-500/20" }
+  if (status === "REMOTE") return { label: "在宅", className: "bg-brand-uplift/10 text-brand-uplift border-brand-uplift/20" }
   return { label: "未チェックイン", className: "bg-muted text-muted-foreground border-border" }
 }
 
@@ -71,25 +71,22 @@ export default async function DashboardOverviewPage() {
 
   return (
     <section className="space-y-5 tracking-tight animate-fade-in">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-themed sm:p-7">
-        <div className="absolute inset-0 gradient-hero opacity-60" />
-        <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-primary/5 -translate-y-12 translate-x-12" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full bg-primary/5 translate-y-8 -translate-x-8" />
+      {/* Hero Section — House Green feature band (design.md §4) */}
+      <section className="relative overflow-hidden rounded-2xl bg-brand-house p-6 shadow-[var(--shadow-card)] sm:p-7">
         <div className="relative z-10 grid gap-4 sm:grid-cols-[1.5fr_1fr]">
           <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-primary/60 uppercase">{getGreeting()}</p>
-            <h2 className="mt-2 text-2xl font-bold text-foreground sm:text-3xl">ダッシュボード</h2>
-            <p className="mt-2 text-sm font-medium text-muted-foreground leading-relaxed">
+            <p className="text-xs font-bold tracking-[0.18em] text-white/60 uppercase">{getGreeting()}</p>
+            <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl">ダッシュボード</h2>
+            <p className="mt-2 text-sm font-medium text-white/70 leading-relaxed">
               {data.todayCheckIn
                 ? `本日のチェックインは ${data.checkedInTimeLabel} に完了しました。`
                 : "まだチェックインしていません。まずはチェックインを記録しましょう。"}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 shadow-sm">
-            <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">本日のステータス</p>
-            <p className="mt-1.5 text-sm font-bold text-foreground">{todayStatusLabel}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+          <div className="rounded-[12px] border border-white/15 bg-white/10 p-4">
+            <p className="text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase">本日のステータス</p>
+            <p className="mt-1.5 text-sm font-bold text-white">{todayStatusLabel}</p>
+            <p className="mt-1 text-xs text-white/70">
               {data.todayPointLabel ? `${data.todayPointLabel} pt` : "ポイント未確定"}
             </p>
           </div>
@@ -256,7 +253,7 @@ export default async function DashboardOverviewPage() {
         {/* Points Ranking - replaces 今日のメモ */}
         <section className="rounded-2xl border border-border bg-card p-6 shadow-themed sm:p-7">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10 text-gold">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>

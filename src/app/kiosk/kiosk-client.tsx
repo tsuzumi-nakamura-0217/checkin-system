@@ -32,36 +32,48 @@ function formatTime(iso: string | null): string {
   return new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" }).format(new Date(iso))
 }
 
-function StatusBadge({ status }: { status: TodayStatus }) {
+function StatusBadge({ status, checkInStatus }: { status: TodayStatus; checkInStatus: string | null }) {
+  const isRemote = checkInStatus === "REMOTE"
+
   if (status === "checked_in") {
+    if (isRemote) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-brand-uplift/10 px-3 py-1 text-sm font-semibold text-brand-uplift">
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
+          </svg>
+          在宅勤務中
+        </span>
+      )
+    }
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
-        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+        <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
         出勤中
       </span>
     )
   }
   if (status === "checked_out") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700">
+      <span className="inline-flex items-center gap-1 rounded-full bg-brand-house/10 px-3 py-1 text-sm font-semibold text-brand-house">
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-        退勤済
+        {isRemote ? "在宅・退勤済" : "退勤済"}
       </span>
     )
   }
   if (status === "overnight") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">
-        <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+      <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-sm font-semibold text-gold">
+        <span className="h-2 w-2 rounded-full bg-gold animate-pulse" />
         前日から在室
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-500">
-      <span className="h-2 w-2 rounded-full bg-slate-400" />
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm font-semibold text-muted-foreground">
+      <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
       未出勤
     </span>
   )
@@ -84,9 +96,11 @@ function UserCard({ user, onTap }: { user: KioskUser; onTap: (user: KioskUser) =
       )}
       <div className="flex flex-col items-center gap-2">
         <p className="text-lg font-bold text-foreground leading-tight">{user.name ?? "不明"}</p>
-        <StatusBadge status={user.todayStatus} />
+        <StatusBadge status={user.todayStatus} checkInStatus={user.checkInStatus} />
         {user.todayStatus === "checked_in" && user.checkedInAt && (
-          <p className="text-xs text-muted-foreground">{formatTime(user.checkedInAt)} 入室</p>
+          <p className="text-xs text-muted-foreground">
+            {formatTime(user.checkedInAt)} {user.checkInStatus === "REMOTE" ? "在宅開始" : "入室"}
+          </p>
         )}
         {user.todayStatus === "overnight" && user.checkedInAt && (
           <p className="text-xs text-muted-foreground">昨日 {formatTime(user.checkedInAt)} 入室</p>
@@ -236,9 +250,9 @@ export function KioskClient() {
 
       {/* Modal */}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={closeModal}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={closeModal}>
           <div
-            className="w-full max-w-sm rounded-3xl bg-card p-8 shadow-2xl border border-border mx-4"
+            className="w-full max-w-sm rounded-[12px] bg-card p-8 shadow-[var(--shadow-nav)] border border-border mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* User info */}
@@ -266,7 +280,7 @@ export function KioskClient() {
                     type="button"
                     onClick={closeModal}
                     disabled={isActing}
-                    className="flex-1 rounded-xl border border-border bg-background px-4 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                    className="flex-1 rounded-full border border-border bg-background px-4 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
                   >
                     キャンセル
                   </button>
@@ -274,10 +288,10 @@ export function KioskClient() {
                     type="button"
                     onClick={handleAction}
                     disabled={isActing}
-                    className={`flex-1 rounded-xl px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50 ${
+                    className={`flex-1 rounded-full px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.95] disabled:opacity-50 ${
                       modal.action === "checkin"
-                        ? "bg-emerald-500 hover:bg-emerald-600"
-                        : "bg-sky-500 hover:bg-sky-600"
+                        ? "bg-primary hover:bg-primary/90"
+                        : "bg-brand-house hover:opacity-90"
                     }`}
                   >
                     {isActing ? (
@@ -305,7 +319,7 @@ export function KioskClient() {
                     type="button"
                     onClick={() => handleOvernightAction("checkout")}
                     disabled={isActing}
-                    className="w-full rounded-xl bg-sky-500 hover:bg-sky-600 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="w-full rounded-full bg-brand-house hover:opacity-90 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.95] disabled:opacity-50"
                   >
                     {isActing ? (
                       <span className="flex items-center justify-center gap-2">
@@ -321,7 +335,7 @@ export function KioskClient() {
                     type="button"
                     onClick={() => handleOvernightAction("checkin")}
                     disabled={isActing}
-                    className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="w-full rounded-full bg-primary hover:bg-primary/90 px-4 py-4 text-base font-bold text-white transition-all active:scale-[0.95] disabled:opacity-50"
                   >
                     {isActing ? (
                       <span className="flex items-center justify-center gap-2">
@@ -337,7 +351,7 @@ export function KioskClient() {
                     type="button"
                     onClick={closeModal}
                     disabled={isActing}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                    className="w-full rounded-full border border-border bg-background px-4 py-4 text-base font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-50"
                   >
                     キャンセル
                   </button>
@@ -347,15 +361,15 @@ export function KioskClient() {
 
             {modal.type === "result" && (
               <>
-                <div className={`flex flex-col items-center gap-3 mb-6 ${modal.success ? "text-emerald-600" : "text-destructive"}`}>
+                <div className={`flex flex-col items-center gap-3 mb-6 ${modal.success ? "text-primary" : "text-destructive"}`}>
                   {modal.success ? (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                       <svg className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
                       <svg className="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -366,7 +380,7 @@ export function KioskClient() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-full rounded-xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="w-full rounded-full bg-primary px-4 py-4 text-base font-bold text-primary-foreground transition-all active:scale-[0.95] hover:bg-primary/90"
                 >
                   閉じる
                 </button>

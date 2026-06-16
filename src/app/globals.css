@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -41,6 +41,17 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Starbucks-inspired brand tiers (design.md §2) */
+  --color-brand-green: var(--brand-green);
+  --color-brand-house: var(--brand-house);
+  --color-brand-uplift: var(--brand-uplift);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-lightest: var(--gold-lightest);
+  --color-ceramic: var(--ceramic);
+  --color-green-light: var(--green-light);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -51,99 +62,70 @@
 }
 
 :root {
-  --background: oklch(0.985 0.002 260);
-  --foreground: oklch(0.20 0.015 260);
-  --card: oklch(1.0 0 0);
-  --card-foreground: oklch(0.20 0.015 260);
-  --popover: oklch(1.0 0 0);
-  --popover-foreground: oklch(0.20 0.015 260);
-  --primary: oklch(0.55 0.22 270);
-  --primary-foreground: oklch(0.99 0.002 270);
-  --secondary: oklch(0.965 0.006 260);
-  --secondary-foreground: oklch(0.35 0.015 260);
-  --muted: oklch(0.955 0.005 260);
-  --muted-foreground: oklch(0.50 0.012 260);
-  --accent: oklch(0.65 0.18 165);
-  --accent-foreground: oklch(0.20 0.06 165);
-  --accent-2: oklch(0.60 0.16 45);
-  --accent-2-foreground: oklch(0.20 0.06 45);
-  --destructive: oklch(0.58 0.22 25);
-  --border: oklch(0.92 0.004 260);
-  --input: oklch(0.94 0.004 260);
-  --ring: oklch(0.55 0.22 270);
-  --chart-1: oklch(0.55 0.22 270);
-  --chart-2: oklch(0.65 0.18 165);
-  --chart-3: oklch(0.60 0.20 240);
-  --chart-4: oklch(0.65 0.2 330);
-  --chart-5: oklch(0.60 0.16 45);
-  --radius: 0.875rem;
-  --sidebar: oklch(0.98 0.003 260);
-  --sidebar-foreground: oklch(0.20 0.015 260);
-  --sidebar-primary: oklch(0.55 0.22 270);
-  --sidebar-primary-foreground: oklch(0.99 0.002 270);
-  --sidebar-accent: oklch(0.55 0.22 270 / 0.08);
-  --sidebar-accent-foreground: oklch(0.55 0.22 270);
-  --sidebar-border: oklch(0.93 0.004 260);
-  --sidebar-ring: oklch(0.55 0.22 270);
+  /* Surfaces — warm-neutral canvas instead of cold white (design.md §2) */
+  --background: #f2f0eb;            /* Neutral Warm — page canvas */
+  --foreground: rgba(0, 0, 0, 0.87); /* Text Black */
+  --card: #ffffff;                  /* White card surface */
+  --card-foreground: rgba(0, 0, 0, 0.87);
+  --popover: #ffffff;
+  --popover-foreground: rgba(0, 0, 0, 0.87);
 
-  /* Custom tokens */
-  --glass-bg: oklch(1.0 0 0 / 0.72);
-  --glass-border: oklch(0.92 0.004 260 / 0.7);
-  --shadow-color: oklch(0.55 0.22 270 / 0.06);
-  --shadow-md: 0 4px 20px -2px var(--shadow-color), 0 2px 8px -2px oklch(0 0 0 / 0.04);
-  --shadow-lg: 0 8px 30px -4px var(--shadow-color), 0 4px 12px -4px oklch(0 0 0 / 0.06);
-  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.22 270), oklch(0.58 0.20 290));
-  --gradient-accent: linear-gradient(135deg, oklch(0.65 0.18 165), oklch(0.60 0.16 200));
-  --gradient-warm: linear-gradient(135deg, oklch(0.60 0.16 45), oklch(0.58 0.18 25));
-  --gradient-hero: linear-gradient(135deg, oklch(0.96 0.02 270), oklch(0.97 0.015 290), oklch(0.985 0.002 260));
-  --task-todo-bar: oklch(0.55 0.22 270);
-  --task-done-bar: oklch(0.65 0.18 165);
-}
+  /* Greens — four-tier brand system mapped to surface roles */
+  --primary: #00754A;               /* Green Accent — primary CTA fill */
+  --primary-foreground: #ffffff;
+  --secondary: #edebe9;             /* Ceramic — quiet utility surface */
+  --secondary-foreground: rgba(0, 0, 0, 0.87);
+  --muted: #f9f9f9;                 /* Neutral Cool */
+  --muted-foreground: rgba(0, 0, 0, 0.58); /* Text Black Soft */
+  --accent: #006241;               /* Starbucks Green — readable success/positive accent */
+  --accent-foreground: #ffffff;     /* white on solid green; bg-accent/10 gives a pale wash */
+  --accent-2: #cba258;              /* Gold — Rewards-ceremony accent only */
+  --accent-2-foreground: #1E3932;
 
-.dark {
-  --background: oklch(0.16 0.008 260);
-  --foreground: oklch(0.94 0.004 260);
-  --card: oklch(0.20 0.008 260);
-  --card-foreground: oklch(0.94 0.004 260);
-  --popover: oklch(0.20 0.008 260);
-  --popover-foreground: oklch(0.94 0.004 260);
-  --primary: oklch(0.70 0.18 270);
-  --primary-foreground: oklch(0.18 0.008 260);
-  --secondary: oklch(0.26 0.008 260);
-  --secondary-foreground: oklch(0.94 0.004 260);
-  --muted: oklch(0.26 0.008 260);
-  --muted-foreground: oklch(0.72 0.008 260);
-  --accent: oklch(0.72 0.14 165);
-  --accent-foreground: oklch(0.16 0.05 165);
-  --accent-2: oklch(0.70 0.14 45);
-  --accent-2-foreground: oklch(0.18 0.05 45);
-  --destructive: oklch(0.60 0.22 25);
-  --border: oklch(0.32 0.008 260);
-  --input: oklch(0.30 0.008 260);
-  --ring: oklch(0.70 0.18 270);
-  --chart-1: oklch(0.70 0.18 270);
-  --chart-2: oklch(0.72 0.14 165);
-  --chart-3: oklch(0.60 0.20 240);
-  --chart-4: oklch(0.65 0.2 330);
-  --chart-5: oklch(0.70 0.14 45);
-  --sidebar: oklch(0.18 0.008 260);
-  --sidebar-foreground: oklch(0.94 0.004 260);
-  --sidebar-primary: oklch(0.70 0.18 270);
-  --sidebar-primary-foreground: oklch(0.18 0.008 260);
-  --sidebar-accent: oklch(0.26 0.008 260);
-  --sidebar-accent-foreground: oklch(0.94 0.004 260);
-  --sidebar-border: oklch(0.32 0.008 260);
-  --sidebar-ring: oklch(0.70 0.18 270);
+  --destructive: #c82014;           /* Red */
+  --border: #e3ded6;                /* warm neutral hairline */
+  --input: #d6dbde;                 /* Input border */
+  --ring: #00754A;                  /* Green Accent focus ring */
 
-  --glass-bg: oklch(0.20 0.008 260 / 0.72);
-  --glass-border: oklch(0.32 0.008 260 / 0.7);
-  --shadow-color: oklch(0 0 0 / 0.25);
-  --shadow-md: 0 4px 20px -2px var(--shadow-color);
-  --shadow-lg: 0 8px 30px -4px var(--shadow-color);
-  --gradient-primary: linear-gradient(135deg, oklch(0.70 0.18 270), oklch(0.65 0.16 290));
-  --gradient-hero: linear-gradient(135deg, oklch(0.20 0.015 270), oklch(0.18 0.01 290), oklch(0.16 0.008 260));
-  --task-todo-bar: oklch(0.70 0.18 270);
-  --task-done-bar: oklch(0.72 0.14 165);
+  --chart-1: #00754A;               /* Green Accent */
+  --chart-2: #006241;               /* Starbucks Green */
+  --chart-3: #1E3932;               /* House Green */
+  --chart-4: #cba258;               /* Gold */
+  --chart-5: #2b5148;               /* Green Uplift */
+
+  --radius: 0.75rem;                /* 12px — cards, modals, popovers */
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: rgba(0, 0, 0, 0.87);
+  --sidebar-primary: #00754A;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(0, 117, 74, 0.08);
+  --sidebar-accent-foreground: #00754A;
+  --sidebar-border: #e3ded6;
+  --sidebar-ring: #00754A;
+
+  /* Brand tiers (design.md §2) */
+  --brand-green: #006241;           /* Starbucks Green — headings */
+  --brand-house: #1E3932;           /* House Green — deep bands / footer */
+  --brand-uplift: #2b5148;          /* Green Uplift — decorative */
+  --gold: #cba258;
+  --gold-light: #dfc49d;
+  --gold-lightest: #faf6ee;
+  --ceramic: #edebe9;
+  --green-light: #d4e9e2;
+
+  /* Elevation — whisper-soft layered shadows, never one heavy drop (design.md §6) */
+  --shadow-card: 0px 0px 0.5px 0px rgba(0, 0, 0, 0.14), 0px 1px 1px 0px rgba(0, 0, 0, 0.24);
+  --shadow-nav: 0 1px 3px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.06), 0 0 2px rgba(0, 0, 0, 0.07);
+  --shadow-frap: 0 0 6px rgba(0, 0, 0, 0.24), 0 8px 12px rgba(0, 0, 0, 0.14);
+  --shadow-frap-active: 0 0 6px rgba(0, 0, 0, 0.24), 0 8px 12px rgba(0, 0, 0, 0);
+  /* Back-compat aliases for existing shadow-themed utilities */
+  --shadow-color: rgba(0, 0, 0, 0.14);
+  --shadow-md: var(--shadow-card);
+  --shadow-lg: var(--shadow-nav);
+
+  --task-todo-bar: #00754A;
+  --task-done-bar: #cba258;
 }
 
 @layer base {
@@ -155,11 +137,14 @@
   }
   html {
     @apply font-sans;
+    /* Tight negative tracking is near-universal (design.md §3) */
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Hierarchy carried by weight + color, not size shifts (design.md §3) */
   h1 {
-    @apply text-2xl font-bold leading-tight tracking-tight sm:text-3xl;
+    @apply text-2xl font-semibold leading-tight tracking-tight sm:text-3xl;
   }
   h2 {
     @apply text-xl font-semibold leading-tight tracking-tight;
@@ -168,7 +153,7 @@
     @apply text-lg font-semibold leading-snug tracking-tight;
   }
 
-  /* Custom scrollbar */
+  /* Custom scrollbar — warm neutral */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -177,32 +162,50 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.80 0.005 260);
+    background: #cfc9bf;
     border-radius: 100px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.70 0.008 260);
+    background: #b7b0a4;
   }
 }
 
 @layer utilities {
+  /* No gradients / no glass blur — the system is solid color-block (design.md §6).
+     These legacy utility names are repointed to solid brand surfaces so any
+     not-yet-swept usage still renders on-brand. */
   .glass {
-    background: var(--glass-bg);
-    border-color: var(--glass-border);
-    backdrop-filter: blur(16px) saturate(1.4);
-    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    background: #ffffff;
+    border-color: var(--border);
+  }
+  .glass-nav {
+    background: #ffffff;
+    border-color: var(--border);
+    box-shadow: var(--shadow-nav);
   }
   .shadow-themed {
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-card);
   }
   .shadow-themed-lg {
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-nav);
   }
   .gradient-primary {
-    background: var(--gradient-primary);
+    background: var(--primary);
+  }
+  .gradient-accent {
+    background: var(--accent);
+  }
+  .gradient-warm {
+    background: var(--gold-lightest);
   }
   .gradient-hero {
-    background: var(--gradient-hero);
+    background: var(--background);
+  }
+  .gradient-house {
+    background: var(--brand-house);
+  }
+  .shadow-frap {
+    box-shadow: var(--shadow-frap);
   }
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
@@ -234,6 +237,6 @@
 }
 
 @keyframes pulseSoft {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.22 270 / 0.3); }
-  50% { box-shadow: 0 0 0 8px oklch(0.55 0.22 270 / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 117, 74, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(0, 117, 74, 0); }
 }

@@ -191,7 +191,7 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
         type="button"
         onClick={handleClick}
         disabled={checkedIn || isBusy}
-        className={`w-full rounded-xl px-8 py-3.5 text-center text-sm font-bold shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 ${
+        className={`w-full rounded-full px-8 py-3.5 text-center text-sm font-bold shadow-sm transition-all duration-200 active:scale-[0.95] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 ${
           checkedIn
             ? "bg-accent/10 text-accent border border-accent/20"
             : isSubmitting
@@ -224,7 +224,7 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
         <button
           type="button"
           onClick={() => setShowRemoteConfirm(true)}
-          className="w-full rounded-lg px-4 py-2 text-center text-xs font-medium text-muted-foreground border border-dashed border-border bg-background/60 transition-all duration-200 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+          className="w-full rounded-full px-4 py-2 text-center text-xs font-medium text-muted-foreground border border-dashed border-border bg-background/60 transition-all duration-200 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
         >
           <span className="flex items-center justify-center gap-1.5">
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>

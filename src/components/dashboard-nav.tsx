@@ -117,7 +117,7 @@ export function DashboardNavMobile({ navLinks }: DashboardNavProps) {
   const mobileLinks = navLinks.filter(item => item.icon !== "settings")
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/90 backdrop-blur-xl lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card shadow-[var(--shadow-nav)] lg:hidden">
       <div className="mx-auto flex max-w-lg items-stretch justify-around">
         {mobileLinks.map((item) => {
           const isActive = isActivePath(pathname, item.href)

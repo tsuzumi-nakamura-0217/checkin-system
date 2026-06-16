@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 
 import { prisma } from "@/lib/prisma"
+import { calculateCheckInPoints } from "@/lib/point-calculator"
 import { markCommunityStreakNoCount } from "@/lib/community-utils"
 import { getCurrentUser } from "@/lib/current-user"
 import { markUserCheckInNoCount } from "@/lib/streak-utils"
@@ -144,18 +145,36 @@ export async function POST() {
     targetTime = lateException.newTargetTime
   }
 
-  // 在宅勤務: ポイントは常に0、ステータスは REMOTE
-  await prisma.checkIn.create({
-    data: {
-      userId: user.id,
-      time: now,
-      targetTime,
-      pointsEarned: 0,
-      status: "REMOTE",
-      latitude: null,
-      longitude: null,
-    },
-  })
+  // 在宅勤務: 本来のポイントの半分を付与し、ステータスは REMOTE
+  // calculateCheckInPoints は早い:+10pt/分・遅刻:-10pt/分を返すため、その半分を採用する
+  // （元のポイントは常に10の倍数なので半分は必ず5の倍数の整数。Math.trunc は念のため0方向へ丸め）
+  const { points: fullPoints } = calculateCheckInPoints(targetTime, now)
+  const remotePoints = Math.trunc(fullPoints / 2)
+
+  const [, updatedUser] = await prisma.$transaction([
+    prisma.checkIn.create({
+      data: {
+        userId: user.id,
+        time: now,
+        targetTime,
+        pointsEarned: remotePoints,
+        status: "REMOTE",
+        latitude: null,
+        longitude: null,
+      },
+    }),
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        points: {
+          increment: remotePoints,
+        },
+      },
+      select: {
+        points: true,
+      },
+    }),
+  ])
 
   await markCommunityStreakNoCount(user.id, "CHECKIN", now)
   await markUserCheckInNoCount(user.id, now)
@@ -198,8 +217,8 @@ export async function POST() {
   return NextResponse.json({
     success: true,
     status: "REMOTE",
-    pointsEarned: 0,
-    totalPoints: user.points,
+    pointsEarned: remotePoints,
+    totalPoints: updatedUser.points,
     targetTime,
     checkedInAt: now,
     taskSummaryText,

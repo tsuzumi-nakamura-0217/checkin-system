@@ -8,6 +8,7 @@ import {
   calculateTaskCompletionPointsFromRange,
 } from "@/lib/point-calculator"
 import { incrementCommunityContribution } from "@/lib/community-utils"
+import { resolveOwnedTagIds, sanitizeTagIds } from "@/lib/task-tags"
 
 type UpdateTaskStatusRequestBody = {
   status?: unknown
@@ -165,6 +166,7 @@ type UpdateTaskRequestBody = {
   description?: unknown
   startAt?: unknown
   endAt?: unknown
+  tagIds?: unknown
 }
 
 function parseOptionalDate(value: unknown): Date | null | undefined {
@@ -260,9 +262,22 @@ export async function PUT(
 
   dataToUpdate.estimatedHours = calculateEstimatedHoursFromRange(startAtToCheck, endAtToCheck) ?? 0
 
+  // tagIds が指定されている場合のみ、付与タグを丸ごと置き換える
+  let tagReplacement: { deleteMany: Record<string, never>; create: { tagId: string }[] } | undefined
+  if ("tagIds" in body) {
+    const ownedTagIds = await resolveOwnedTagIds(currentUser.id, sanitizeTagIds(body.tagIds))
+    tagReplacement = {
+      deleteMany: {},
+      create: ownedTagIds.map((tagId) => ({ tagId })),
+    }
+  }
+
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
-    data: dataToUpdate,
+    data: {
+      ...dataToUpdate,
+      ...(tagReplacement ? { taskTags: tagReplacement } : {}),
+    },
     select: {
       id: true,
       title: true,

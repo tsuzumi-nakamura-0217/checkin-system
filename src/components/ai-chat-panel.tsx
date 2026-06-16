@@ -297,7 +297,7 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
       )}
     >
       <header className="relative overflow-hidden border-b border-border/80 px-4 py-4 sm:px-5">
-        <div className="absolute inset-0 bg-linear-to-r from-primary/12 via-primary/4 to-accent/10" />
+        <div className="absolute inset-0 bg-primary/8" />
         <div className="relative flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] text-primary/80 uppercase">

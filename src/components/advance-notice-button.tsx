@@ -178,7 +178,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <button
             type="button"
-            className="absolute inset-0 bg-foreground/20 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/30 transition-opacity"
             onClick={closeModal}
             aria-label="モーダルを閉じる"
           />

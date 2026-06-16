@@ -274,3 +274,33 @@ CREATE UNIQUE INDEX "CommunityContribution_userId_goalId_key" ON "CommunityContr
 ALTER TABLE "User" ADD COLUMN "customImage" TEXT;
 ALTER TABLE "User" ADD COLUMN "username" TEXT;
 
+-- CreateTable (Tag feature)
+CREATE TABLE "Tag" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "color" TEXT NOT NULL DEFAULT 'slate',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Tag_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable (Tag feature)
+CREATE TABLE "TaskTag" (
+    "taskId" TEXT NOT NULL,
+    "tagId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("taskId", "tagId"),
+    CONSTRAINT "TaskTag_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "TaskTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateIndex (Tag feature)
+CREATE INDEX "Tag_userId_idx" ON "Tag"("userId");
+
+-- CreateIndex (Tag feature)
+CREATE UNIQUE INDEX "Tag_userId_name_key" ON "Tag"("userId", "name");
+
+-- CreateIndex (Tag feature)
+CREATE INDEX "TaskTag_tagId_idx" ON "TaskTag"("tagId");
+

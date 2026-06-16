@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/current-user"
 import { calculateEstimatedHoursFromRange } from "@/lib/point-calculator"
+import { resolveOwnedTagIds, sanitizeTagIds } from "@/lib/task-tags"
 
 type CreateTaskRequestBody = {
   title?: unknown
@@ -11,6 +12,7 @@ type CreateTaskRequestBody = {
   type?: unknown
   startAt?: unknown
   endAt?: unknown
+  tagIds?: unknown
 }
 
 const ALLOWED_TASK_TYPES = new Set(["DAILY", "WEEKLY", "MONTHLY"])
@@ -78,6 +80,8 @@ export async function POST(request: Request) {
 
   const estimatedHours = calculateEstimatedHoursFromRange(startAt, endAt) ?? 0
 
+  const ownedTagIds = await resolveOwnedTagIds(currentUser.id, sanitizeTagIds(body.tagIds))
+
   const task = await prisma.task.create({
     data: {
       userId: currentUser.id,
@@ -88,6 +92,9 @@ export async function POST(request: Request) {
       status: "TODO",
       startAt,
       endAt,
+      taskTags: {
+        create: ownedTagIds.map((tagId) => ({ tagId })),
+      },
     },
     select: {
       id: true,

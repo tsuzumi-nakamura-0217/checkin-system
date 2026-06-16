@@ -47,6 +47,7 @@ model User {
   communityComments CommunityComment[]
   communityContributions CommunityContribution[]
   communityCommentReads CommunityCommentRead[]
+  tags       Tag[]
 
   loginStreak      Int       @default(0)
   lastLoginDate    DateTime?
@@ -202,8 +203,38 @@ model Task {
   completedAt  DateTime?
   pointsEarned Int?
 
+  taskTags TaskTag[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String   @default("slate")
+
+  taskTags  TaskTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model TaskTag {
+  taskId String
+  tagId  String
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([taskId, tagId])
+  @@index([tagId])
 }
 
 model ExceptionRequest {

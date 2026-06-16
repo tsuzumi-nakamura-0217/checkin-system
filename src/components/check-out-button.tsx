@@ -95,10 +95,10 @@ export function CheckOutButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className={`w-full rounded-xl border px-8 py-3.5 text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 ${
+        className={`w-full rounded-full border px-8 py-3.5 text-sm font-bold transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none ${
           alreadyCheckedOut
             ? "border-accent/20 bg-accent/8 text-accent"
-            : "border-border bg-card text-foreground shadow-sm hover:shadow-themed hover:border-primary/20 active:scale-[0.99]"
+            : "border-border bg-card text-foreground shadow-sm hover:shadow-themed hover:border-primary/20 active:scale-[0.95]"
         }`}
       >
         {!hasTodayCheckIn

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { TaskCreateForm } from "@/components/task-create-form"
 import { TaskCard } from "@/components/task-card"
+import { TagManager } from "@/components/tag-manager"
 import { getTasksData } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 
@@ -36,7 +37,10 @@ export default async function DashboardTasksPage() {
         </span>
       </div>
 
-      <TaskCreateForm />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <TaskCreateForm allTags={data.allTags} />
+        <TagManager tags={data.allTags} />
+      </div>
 
       <section className="rounded-2xl border border-border bg-card p-5 shadow-themed sm:p-7">
         {data.tasks.length === 0 ? (
@@ -52,7 +56,7 @@ export default async function DashboardTasksPage() {
         ) : (
           <ul className="space-y-2.5">
             {data.tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard key={task.id} task={task} allTags={data.allTags} />
             ))}
           </ul>
         )}

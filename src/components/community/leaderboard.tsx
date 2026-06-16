@@ -50,7 +50,7 @@ export function Leaderboard({ data: initialData }: LeaderboardProps) {
         <CardTitle className="text-lg font-bold tracking-tight text-foreground">
           Top Contributors
         </CardTitle>
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gold/10 text-gold">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
           </svg>
@@ -72,7 +72,7 @@ export function Leaderboard({ data: initialData }: LeaderboardProps) {
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black shadow-sm transition-transform group-hover:scale-110",
-                    index === 0 ? "gradient-primary text-white" : 
+                    index === 0 ? "bg-gold text-white" :
                     index === 1 ? "bg-slate-300 text-slate-700 dark:bg-slate-700 dark:text-slate-300" :
                     index === 2 ? "bg-amber-600/20 text-amber-600 dark:text-amber-500" :
                     "bg-secondary text-muted-foreground"
