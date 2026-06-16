@@ -642,9 +642,15 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                           <div className="min-w-0 flex-1">
                             <p className={`truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
                             {task.tags.length > 0 && (
-                              <div className="mt-0.5 flex items-center gap-0.5">
-                                {task.tags.slice(0, 4).map((tag) => (
-                                  <span key={tag.id} className={`size-1.5 flex-shrink-0 rounded-full ${getTagColorPreset(tag.color).dot}`} title={tag.name} />
+                              <div className="mt-0.5 flex flex-wrap gap-0.5">
+                                {task.tags.map((tag) => (
+                                  <span
+                                    key={tag.id}
+                                    title={tag.name}
+                                    className={`inline-flex max-w-full items-center rounded border px-1 text-[9px] font-bold leading-[1.5] ${getTagColorPreset(tag.color).badge}`}
+                                  >
+                                    <span className="truncate">{tag.name}</span>
+                                  </span>
                                 ))}
                               </div>
                             )}
