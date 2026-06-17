@@ -95,6 +95,8 @@ export async function POST() {
         gte: dayStart,
         lt: nextDayStart,
       },
+      // ABSENT records are penalty markers, not real check-ins.
+      status: { not: "ABSENT" },
     },
     select: {
       id: true,

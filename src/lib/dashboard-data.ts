@@ -223,7 +223,8 @@ export async function getOverviewData(userId: string) {
     totalDoneTaskPoints,
   ] = await Promise.all([
     prisma.checkIn.findFirst({
-      where: { userId, time: { gte: dayStart, lt: nextDayStart } },
+      // ABSENT records are penalty markers, not real check-ins.
+      where: { userId, time: { gte: dayStart, lt: nextDayStart }, status: { not: "ABSENT" } },
       orderBy: { time: "desc" },
       select: { time: true, checkOutTime: true, pointsEarned: true, status: true },
     }),
@@ -421,7 +422,8 @@ export async function getCalendarData(userId: string, weekParam?: string | strin
       select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
     prisma.checkIn.findFirst({
-      where: { userId, time: { gte: dayStart, lt: nextDayStart } },
+      // ABSENT records are penalty markers, not real check-ins.
+      where: { userId, time: { gte: dayStart, lt: nextDayStart }, status: { not: "ABSENT" } },
       orderBy: { time: "desc" },
       select: { time: true, status: true },
     }),
@@ -596,7 +598,9 @@ export const getAllUsersRankingAndTodayActivity = unstable_cache(
       select: { userId: true, pointsEarned: true, startAt: true, endAt: true },
     }),
     prisma.checkIn.findMany({
-      where: { time: { gte: dayStart, lt: nextDayStart } },
+      // ABSENT records are penalty markers, not real check-ins. The penalty
+      // still affects total points via the groupBy aggregate above.
+      where: { time: { gte: dayStart, lt: nextDayStart }, status: { not: "ABSENT" } },
       orderBy: { time: "desc" },
       select: { userId: true, time: true, checkOutTime: true, pointsEarned: true, status: true, targetTime: true },
     }),

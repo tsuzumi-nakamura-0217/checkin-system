@@ -67,7 +67,12 @@ export async function POST(request: Request) {
   }
 
   const alreadyCheckedIn = await prisma.checkIn.findFirst({
-    where: { userId: user.id, time: { gte: dayStart, lt: nextDayStart } },
+    where: {
+      userId: user.id,
+      time: { gte: dayStart, lt: nextDayStart },
+      // ABSENT records are penalty markers, not real check-ins.
+      status: { not: "ABSENT" },
+    },
     select: { id: true, time: true },
   })
 

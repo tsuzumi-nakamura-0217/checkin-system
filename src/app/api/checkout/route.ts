@@ -33,6 +33,8 @@ export async function POST() {
         gte: dayStart,
         lt: nextDayStart,
       },
+      // ABSENT records are penalty markers; you cannot check out of them.
+      status: { not: "ABSENT" },
     },
     orderBy: {
       time: "desc",

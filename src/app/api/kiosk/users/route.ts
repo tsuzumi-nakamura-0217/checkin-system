@@ -34,6 +34,10 @@ export async function GET() {
       checkIns: {
         where: {
           time: { gte: windowStart, lt: nextDayStart },
+          // ABSENT records are penalty markers written by the absent-penalty
+          // cron at 23:59 JST. They are not real check-ins, so the kiosk must
+          // not treat them as "出勤中"/"前日から在室".
+          status: { not: "ABSENT" },
         },
         select: {
           time: true,

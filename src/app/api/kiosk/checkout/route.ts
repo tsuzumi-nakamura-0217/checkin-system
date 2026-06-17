@@ -34,7 +34,12 @@ export async function POST(request: Request) {
   }
 
   let targetCheckIn = await prisma.checkIn.findFirst({
-    where: { userId: body.userId, time: { gte: dayStart, lt: nextDayStart } },
+    where: {
+      userId: body.userId,
+      time: { gte: dayStart, lt: nextDayStart },
+      // ABSENT records are penalty markers; you cannot check out of them.
+      status: { not: "ABSENT" },
+    },
     orderBy: { time: "desc" },
     select: selectFields,
   })
@@ -46,6 +51,9 @@ export async function POST(request: Request) {
         userId: body.userId,
         checkOutTime: null,
         time: { gte: windowStart, lt: dayStart },
+        // Exclude ABSENT penalty markers so an overnight checkout never
+        // "checks out" of yesterday's absence record.
+        status: { not: "ABSENT" },
       },
       orderBy: { time: "desc" },
       select: selectFields,
