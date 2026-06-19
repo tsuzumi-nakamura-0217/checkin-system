@@ -607,6 +607,9 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                     if (clampedEnd <= clampedStart) return null
                     const top = clampedStart * PX_PER_MINUTE
                     const height = Math.max((clampedEnd - clampedStart) * PX_PER_MINUTE, 22)
+                    // 縦に狭いブロックではタグを縦積みにすると overflow-hidden で切れるため、
+                    // タイトル行にバッジを横並びにする (44px 未満 ≒ 45分以下のタスク)
+                    const isCompact = height < 44
                     const isDone = task.status === "DONE"
                     const isGhost = taskDragContext?.taskId === task.id || taskResizeContext?.taskId === task.id
 
@@ -640,21 +643,42 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                             {isDone && <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                           </button>
                           <div className="min-w-0 flex-1">
-                            <p className={`truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
-                            {task.tags.length > 0 && (
-                              <div className="mt-0.5 flex flex-wrap gap-0.5">
-                                {task.tags.map((tag) => (
-                                  <span
-                                    key={tag.id}
-                                    title={tag.name}
-                                    className={`inline-flex max-w-full items-center rounded border px-1 text-[9px] font-bold leading-[1.5] ${getTagColorPreset(tag.color).badge}`}
-                                  >
-                                    <span className="truncate">{tag.name}</span>
-                                  </span>
-                                ))}
+                            {isCompact ? (
+                              <div className="flex items-center gap-1">
+                                <p className={`min-w-0 flex-1 truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
+                                {task.tags.length > 0 && (
+                                  <div className="flex flex-shrink-0 items-center gap-0.5 overflow-hidden">
+                                    {task.tags.map((tag) => (
+                                      <span
+                                        key={tag.id}
+                                        title={tag.name}
+                                        className={`inline-flex max-w-[72px] items-center rounded border px-1 text-[9px] font-bold leading-[1.4] ${getTagColorPreset(tag.color).badge}`}
+                                      >
+                                        <span className="truncate">{tag.name}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
+                            ) : (
+                              <>
+                                <p className={`truncate text-[11px] font-semibold leading-tight ${isDone ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>{task.title}</p>
+                                {task.tags.length > 0 && (
+                                  <div className="mt-0.5 flex flex-wrap gap-0.5">
+                                    {task.tags.map((tag) => (
+                                      <span
+                                        key={tag.id}
+                                        title={tag.name}
+                                        className={`inline-flex max-w-full items-center rounded border px-1 text-[9px] font-bold leading-[1.5] ${getTagColorPreset(tag.color).badge}`}
+                                      >
+                                        <span className="truncate">{tag.name}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                {height >= 36 && <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground/50 tabular-nums">{toDurationLabel(task.startDate, task.endDate)}</p>}
+                              </>
                             )}
-                            {height >= 36 && <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground/50 tabular-nums">{toDurationLabel(task.startDate, task.endDate)}</p>}
                           </div>
                         </div>
                         <button type="button" data-resize-handle="true" aria-label="終了時刻を調整" className="absolute inset-x-1 -bottom-1 z-20 h-2.5 cursor-ns-resize rounded-full bg-transparent" onClick={(e) => { e.preventDefault(); e.stopPropagation() }} onMouseDown={(event) => { if (event.button !== 0) return; event.preventDefault(); event.stopPropagation(); suppressNextTaskClickRef.current = true; suppressPostDragClickRef.current = true; const ss = clamp(Math.floor(startMinute / SLOT_MINUTES), 0, slotCount - 1); const es = clamp(Math.ceil(endMinute / SLOT_MINUTES), ss + 1, slotCount); setTaskResizeContext({ taskId: task.id, edge: "end", dayIndex: day.index, initialStartSlot: ss, initialEndSlot: es }); setTaskResizeCurrent({ dayIndex: day.index, slotIndex: es }) }} />
