@@ -6,7 +6,6 @@ import { CheckOutButton } from "@/components/check-out-button"
 import { formatPoint, getCheckInStatusLabel, getOverviewData, getAllUsersRankingAndTodayActivity } from "@/lib/dashboard-data"
 import { getCurrentUser } from "@/lib/current-user"
 import { CommunitySummaryCard } from "@/components/community/summary-card"
-import { updateUserLoginStreak } from "@/lib/streak-utils"
 import { formatTimeLabel } from "@/lib/calendar-utils"
 
 function getGreeting(): string {
@@ -51,9 +50,7 @@ export default async function DashboardOverviewPage() {
     redirect("/login")
   }
 
-  // Update personal login streak
-  await updateUserLoginStreak(currentUser.id)
-
+  // Login streak is already updated in the dashboard layout (runs before this page).
   const [data, { ranking, todayActivity }] = await Promise.all([
     getOverviewData(currentUser.id),
     getAllUsersRankingAndTodayActivity(),

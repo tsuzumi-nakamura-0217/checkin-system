@@ -2,9 +2,11 @@
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT,
+    "username" TEXT,
     "email" TEXT,
     "emailVerified" DATETIME,
     "image" TEXT,
+    "customImage" TEXT,
     "password" TEXT,
     "points" INTEGER NOT NULL DEFAULT 0,
     "role" TEXT NOT NULL DEFAULT 'USER',
@@ -163,6 +165,28 @@ CREATE TABLE "Task" (
 );
 
 -- CreateTable
+CREATE TABLE "Tag" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "color" TEXT NOT NULL DEFAULT 'slate',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Tag_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "TaskTag" (
+    "taskId" TEXT NOT NULL,
+    "tagId" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY ("taskId", "tagId"),
+    CONSTRAINT "TaskTag_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "TaskTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "ExceptionRequest" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
@@ -265,42 +289,41 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
+CREATE INDEX "CheckIn_userId_time_idx" ON "CheckIn"("userId", "time");
+
+-- CreateIndex
+CREATE INDEX "CheckIn_time_idx" ON "CheckIn"("time");
+
+-- CreateIndex
+CREATE INDEX "Task_userId_status_idx" ON "Task"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "Task_userId_startAt_idx" ON "Task"("userId", "startAt");
+
+-- CreateIndex
+CREATE INDEX "Task_userId_createdAt_idx" ON "Task"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Tag_userId_idx" ON "Tag"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Tag_userId_name_key" ON "Tag"("userId", "name");
+
+-- CreateIndex
+CREATE INDEX "TaskTag_tagId_idx" ON "TaskTag"("tagId");
+
+-- CreateIndex
+CREATE INDEX "ExceptionRequest_userId_date_idx" ON "ExceptionRequest"("userId", "date");
+
+-- CreateIndex
+CREATE INDEX "CommunityComment_goalId_createdAt_idx" ON "CommunityComment"("goalId", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CommunityCommentRead_commentId_userId_key" ON "CommunityCommentRead"("commentId", "userId");
 
 -- CreateIndex
+CREATE INDEX "CommunityContribution_goalId_idx" ON "CommunityContribution"("goalId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "CommunityContribution_userId_goalId_key" ON "CommunityContribution"("userId", "goalId");
-
--- AlterTable (added after initial migration)
-ALTER TABLE "User" ADD COLUMN "customImage" TEXT;
-ALTER TABLE "User" ADD COLUMN "username" TEXT;
-
--- CreateTable (Tag feature)
-CREATE TABLE "Tag" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "color" TEXT NOT NULL DEFAULT 'slate',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Tag_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable (Tag feature)
-CREATE TABLE "TaskTag" (
-    "taskId" TEXT NOT NULL,
-    "tagId" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ("taskId", "tagId"),
-    CONSTRAINT "TaskTag_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "TaskTag_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateIndex (Tag feature)
-CREATE INDEX "Tag_userId_idx" ON "Tag"("userId");
-
--- CreateIndex (Tag feature)
-CREATE UNIQUE INDEX "Tag_userId_name_key" ON "Tag"("userId", "name");
-
--- CreateIndex (Tag feature)
-CREATE INDEX "TaskTag_tagId_idx" ON "TaskTag"("tagId");
 

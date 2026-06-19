@@ -215,7 +215,6 @@ export async function getOverviewData(userId: string) {
   const [
     todayCheckIn,
     todayTasksRaw,
-    doneTaskCountCalc,
     weeklyCheckIns,
     weeklyDoneTasks,
     advanceNotices,
@@ -233,9 +232,8 @@ export async function getOverviewData(userId: string) {
       orderBy: [{ createdAt: "desc" }],
       select: { id: true, title: true, description: true, type: true, status: true, pointsEarned: true, startAt: true, endAt: true, completedAt: true, createdAt: true },
     }),
-    prisma.task.count({
-      where: { userId, status: "DONE" },
-    }),
+    // doneTaskCount is derived from totalDoneTaskPoints.length below (same WHERE),
+    // so a separate task.count query is redundant and was removed.
     prisma.checkIn.findMany({
       where: { userId, time: { gte: weekStart, lt: weekEnd } },
       select: { time: true, checkOutTime: true, pointsEarned: true, status: true },
@@ -297,7 +295,7 @@ export async function getOverviewData(userId: string) {
     weeklyCheckInPoints,
     weeklyCheckInCount,
     weeklyTaskPoints,
-    doneTaskCount: doneTaskCountCalc,
+    doneTaskCount: totalDoneTaskPoints.length,
     advanceNotices,
     checkedInTimeLabel: todayCheckIn ? formatTimeLabel(todayCheckIn.time) : null,
     checkedOutTimeLabel: todayCheckIn?.checkOutTime ? formatTimeLabel(todayCheckIn.checkOutTime) : null,
@@ -363,15 +361,31 @@ export type HistoryStats = {
   onTimeRate: number
 }
 
+// The rendered history table is capped at this many recent rows. The stat
+// cards are computed over the FULL history via aggregation (below), so summary
+// numbers stay accurate regardless of this limit.
+const HISTORY_TABLE_LIMIT = 200
+
 export async function getHistoryData(userId: string) {
-  const recentCheckIns = await prisma.checkIn.findMany({
-    where: { userId },
-    orderBy: { time: "desc" },
-    select: { time: true, checkOutTime: true, pointsEarned: true, status: true, targetTime: true },
-  })
+  const [recentCheckIns, statusGroups] = await Promise.all([
+    // Table rows: most recent N only (index-backed by CheckIn(userId, time)).
+    prisma.checkIn.findMany({
+      where: { userId },
+      orderBy: { time: "desc" },
+      take: HISTORY_TABLE_LIMIT,
+      select: { time: true, checkOutTime: true, pointsEarned: true, status: true, targetTime: true },
+    }),
+    // Stats: aggregate over ALL check-ins without transferring every row.
+    prisma.checkIn.groupBy({
+      by: ["status"],
+      where: { userId },
+      _count: { _all: true },
+      _sum: { pointsEarned: true },
+    }),
+  ])
 
   const stats: HistoryStats = {
-    total: recentCheckIns.length,
+    total: 0,
     earlyCount: 0,
     onTimeCount: 0,
     lateCount: 0,
@@ -380,12 +394,16 @@ export async function getHistoryData(userId: string) {
     onTimeRate: 0,
   }
 
-  for (const item of recentCheckIns) {
-    stats.totalPoints += item.pointsEarned
-    if (item.status === "EARLY") stats.earlyCount += 1
-    else if (item.status === "ON_TIME") stats.onTimeCount += 1
-    else if (item.status === "LATE") stats.lateCount += 1
-    else if (item.status === "REMOTE") stats.remoteCount += 1
+  // Mirrors the previous per-row tally: `total` and `totalPoints` include every
+  // status; only the known statuses get their own bucket.
+  for (const group of statusGroups) {
+    const count = group._count._all
+    stats.total += count
+    stats.totalPoints += group._sum.pointsEarned ?? 0
+    if (group.status === "EARLY") stats.earlyCount += count
+    else if (group.status === "ON_TIME") stats.onTimeCount += count
+    else if (group.status === "LATE") stats.lateCount += count
+    else if (group.status === "REMOTE") stats.remoteCount += count
   }
 
   const onTimeBase = stats.total - stats.remoteCount
