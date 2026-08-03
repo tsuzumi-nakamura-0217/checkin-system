@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+
+const FLASH_DURATION_MS = 4000
 
 type TodayStatus = "unchecked" | "checked_in" | "checked_out" | "overnight"
 
@@ -21,6 +23,14 @@ type ModalState =
   | { type: "overnight"; user: KioskUser }
   | { type: "result"; user: KioskUser; action: "checkin" | "checkout"; success: boolean; message: string }
   | null
+
+type FlashState = {
+  id: number
+  action: "checkin" | "checkout"
+  name: string
+  title: string
+  detail: string
+}
 
 function getInitials(name: string | null): string {
   if (!name) return "?"
@@ -119,6 +129,18 @@ export function KioskClient() {
   const [modal, setModal] = useState<ModalState>(null)
   const [isActing, setIsActing] = useState(false)
   const [clock, setClock] = useState("")
+  const [flash, setFlash] = useState<FlashState | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showFlash = useCallback((next: Omit<FlashState, "id">) => {
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+    setFlash({ ...next, id: Date.now() })
+    flashTimer.current = setTimeout(() => setFlash(null), FLASH_DURATION_MS)
+  }, [])
+
+  useEffect(() => () => {
+    if (flashTimer.current) clearTimeout(flashTimer.current)
+  }, [])
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -178,10 +200,16 @@ export function KioskClient() {
       const data = await res.json() as { success: boolean; error?: string; status?: string; pointsEarned?: number; checkedInAt?: string; checkedOutAt?: string }
 
       if (data.success) {
-        const message = action === "checkin"
-          ? `チェックイン完了！ (${data.status === "EARLY" ? "早着" : data.status === "LATE" ? "遅刻" : "時間内"}, ${(data.pointsEarned ?? 0) >= 0 ? "+" : ""}${data.pointsEarned}pt)`
-          : `退勤しました。お疲れさまでした！`
-        setModal({ type: "result", user, action, success: true, message })
+        // 完了ポップアップは出さず、モーダルを閉じてヘッダーに完了マークを一定時間表示する
+        setModal(null)
+        showFlash({
+          action,
+          name: user.name ?? "不明",
+          title: action === "checkin" ? "出勤しました" : "退勤しました",
+          detail: action === "checkin"
+            ? `${data.status === "EARLY" ? "早着" : data.status === "LATE" ? "遅刻" : "時間内"} ・ ${(data.pointsEarned ?? 0) >= 0 ? "+" : ""}${data.pointsEarned ?? 0}pt`
+            : "お疲れさまでした！",
+        })
         fetchUsers()
       } else {
         setModal({ type: "result", user, action, success: false, message: data.error ?? "エラーが発生しました。" })
@@ -191,7 +219,7 @@ export function KioskClient() {
     } finally {
       setIsActing(false)
     }
-  }, [fetchUsers])
+  }, [fetchUsers, showFlash])
 
   const handleAction = async () => {
     if (!modal || modal.type !== "confirm") return
@@ -209,7 +237,7 @@ export function KioskClient() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border bg-card px-8 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
             <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -220,7 +248,39 @@ export function KioskClient() {
             <p className="text-xs text-muted-foreground">名前をタッチしてください</p>
           </div>
         </div>
-        <div className="text-right">
+        {/* 処理中 / 完了マーク */}
+        <div className="flex min-w-0 flex-1 items-center justify-center px-4">
+          {isActing ? (
+            <div className="flex items-center gap-2 rounded-full border border-border bg-muted px-5 py-2 text-sm font-semibold text-muted-foreground animate-scale-in">
+              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              処理中...
+            </div>
+          ) : flash ? (
+            <div
+              key={flash.id}
+              className={`flex min-w-0 items-center gap-3 rounded-full border px-5 py-2 animate-scale-in ${
+                flash.action === "checkin"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-brand-house/30 bg-brand-house/10 text-brand-house"
+              }`}
+            >
+              <svg className="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <div className="min-w-0 text-left">
+                <p className="truncate text-sm font-bold leading-tight">
+                  {flash.name} さん {flash.title}
+                </p>
+                <p className="truncate text-xs leading-tight opacity-80">{flash.detail}</p>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="shrink-0 text-right">
           <p className="text-2xl font-bold tabular-nums text-foreground">{clock.split(" ").pop()}</p>
           <p className="text-sm text-muted-foreground">{clock.split(" ").slice(0, -1).join(" ")}</p>
         </div>
