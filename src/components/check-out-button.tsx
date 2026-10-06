@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
 type CheckOutButtonProps = {
   hasTodayCheckIn: boolean
   alreadyCheckedOut: boolean
+  autoStart?: boolean
 }
 
 type CheckOutSuccessResponse = {
@@ -23,6 +24,7 @@ type CheckOutErrorResponse = {
 export function CheckOutButton({
   hasTodayCheckIn,
   alreadyCheckedOut,
+  autoStart = false,
 }: CheckOutButtonProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -88,6 +90,16 @@ export function CheckOutButton({
       setIsSubmitting(false)
     }
   }
+
+  // ホーム画面ショートカットから開かれた場合は自動で実行し、再読み込みで二重実行しないようURLから外す
+  const autoStartedRef = useRef(false)
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current) return
+    autoStartedRef.current = true
+    window.history.replaceState(null, "", window.location.pathname)
+    void handleClick()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart])
 
   return (
     <div className="flex w-full flex-col gap-2">

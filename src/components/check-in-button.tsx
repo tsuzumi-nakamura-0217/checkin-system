@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
 type CheckInButtonProps = {
   checkedIn: boolean
+  autoStart?: boolean
 }
 
 type CheckInSuccessResponse = {
@@ -71,7 +72,7 @@ function toStatusLabel(status: "EARLY" | "LATE" | "ON_TIME" | "REMOTE"): string 
   return "時間内"
 }
 
-export function CheckInButton({ checkedIn }: CheckInButtonProps) {
+export function CheckInButton({ checkedIn, autoStart = false }: CheckInButtonProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRemoteSubmitting, setIsRemoteSubmitting] = useState(false)
@@ -141,6 +142,16 @@ export function CheckInButton({ checkedIn }: CheckInButtonProps) {
       setIsSubmitting(false)
     }
   }
+
+  // ホーム画面ショートカットから開かれた場合は自動で実行し、再読み込みで二重実行しないようURLから外す
+  const autoStartedRef = useRef(false)
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current) return
+    autoStartedRef.current = true
+    window.history.replaceState(null, "", window.location.pathname)
+    void handleClick()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart])
 
   const handleRemoteCheckIn = async () => {
     if (checkedIn || isRemoteSubmitting) return

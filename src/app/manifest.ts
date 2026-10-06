@@ -26,5 +26,20 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/svg+xml',
       },
     ],
+    // アイコン長押しで表示されるショートカット（Android / デスクトップ Chrome 対応）
+    shortcuts: [
+      {
+        name: '出勤（チェックイン）',
+        short_name: '出勤',
+        url: '/dashboard/overview?action=checkin',
+        icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }],
+      },
+      {
+        name: '退勤を記録',
+        short_name: '退勤',
+        url: '/dashboard/overview?action=checkout',
+        icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }],
+      },
+    ],
   };
 }

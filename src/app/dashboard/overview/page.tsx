@@ -43,7 +43,12 @@ function getTaskStatusIcon(status: string) {
   return { icon: "○", className: "text-muted-foreground bg-muted" }
 }
 
-export default async function DashboardOverviewPage() {
+type DashboardOverviewPageProps = {
+  searchParams: Promise<{ action?: string | string[] }>
+}
+
+export default async function DashboardOverviewPage({ searchParams }: DashboardOverviewPageProps) {
+  const { action } = await searchParams
   const currentUser = await getCurrentUser()
 
   if (!currentUser?.id) {
@@ -237,10 +242,11 @@ export default async function DashboardOverviewPage() {
               まずチェックイン、終了時に退勤を記録してください。
             </p>
             <div className="mt-4 space-y-3">
-              <CheckInButton checkedIn={Boolean(data.todayCheckIn)} />
+              <CheckInButton checkedIn={Boolean(data.todayCheckIn)} autoStart={action === "checkin"} />
               <CheckOutButton
                 hasTodayCheckIn={Boolean(data.todayCheckIn)}
                 alreadyCheckedOut={Boolean(data.todayCheckIn?.checkOutTime)}
+                autoStart={action === "checkout"}
               />
               <AdvanceNoticeButton requests={data.advanceNotices} />
             </div>
