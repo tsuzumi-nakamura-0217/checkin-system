@@ -23,7 +23,7 @@ export default async function KioskPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM5.25 4.5h13.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 17.25V6.75A2.25 2.25 0 015.25 4.5z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">アクセス権限がありません</h1>
+        <h1 className="text-2xl font-semibold text-foreground">アクセス権限がありません</h1>
         <p className="max-w-md text-sm text-muted-foreground">
           このキオスク画面は研究室の指定ネットワークからのみ利用できます。研究室のWi-Fiに接続してから再度お試しください。
         </p>

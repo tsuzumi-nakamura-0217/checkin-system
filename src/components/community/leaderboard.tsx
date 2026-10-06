@@ -47,7 +47,7 @@ export function Leaderboard({ data: initialData }: LeaderboardProps) {
   return (
     <Card className="border-none bg-card shadow-themed">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-lg font-bold tracking-tight text-foreground">
+        <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
           Top Contributors
         </CardTitle>
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gold/10 text-gold">
@@ -71,7 +71,7 @@ export function Leaderboard({ data: initialData }: LeaderboardProps) {
               <div key={user.id} className="group flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
                 <div className="flex items-center gap-3">
                   <div className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-lg text-xs font-black shadow-sm transition-transform group-hover:scale-110",
+                    "flex h-7 w-7 items-center justify-center rounded-lg text-xs font-semibold shadow-sm transition-transform group-hover:scale-110",
                     index === 0 ? "bg-gold text-white" :
                     index === 1 ? "bg-slate-300 text-slate-700 dark:bg-slate-700 dark:text-slate-300" :
                     index === 2 ? "bg-amber-600/20 text-amber-600 dark:text-amber-500" :
@@ -92,15 +92,15 @@ export function Leaderboard({ data: initialData }: LeaderboardProps) {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-bold tracking-tight text-foreground">{user.name || "Anonymous"}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest leading-none mt-0.5">Contributor</p>
+                      <p className="text-sm font-semibold tracking-tight text-foreground">{user.name || "Anonymous"}</p>
+                      <p className="text-xs font-semibold text-muted-foreground leading-none mt-0.5">Contributor</p>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[11px] font-black tracking-[0.1em] text-primary transition-shadow group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]">
+                  <p className="text-[11px] font-semibold tracking-[0.1em] text-primary transition-shadow group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.3)]">
                     {user.points.toLocaleString()}
-                    <span className="ml-1 font-bold text-muted-foreground/60 uppercase">pts</span>
+                    <span className="ml-1 font-semibold text-muted-foreground/60 uppercase">pts</span>
                   </p>
                 </div>
               </div>

@@ -147,12 +147,12 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
   return (
     <Card className="flex flex-col border-none bg-card shadow-themed h-[500px]">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-lg font-bold tracking-tight text-foreground">
+        <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
           Community Chat
         </CardTitle>
         <div className="flex items-center gap-2">
           {isFetching && <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />}
-          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+          <p className="text-xs font-semibold text-muted-foreground">
             {isFetching ? "Syncing..." : "Live"}
           </p>
         </div>
@@ -179,14 +179,14 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
                 </div>
                 <div className={cn("min-w-0 flex-1", isMine && "flex flex-col items-end")}>
                   <div className={cn("flex items-baseline gap-2", isMine && "flex-row-reverse")}>
-                    <p className="text-sm font-bold text-foreground truncate">{comment.user?.name || "Anonymous"}</p>
-                    <p className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest shrink-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{comment.user?.name || "Anonymous"}</p>
+                    <p className="text-[9px] font-semibold text-muted-foreground shrink-0">
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ja })}
                     </p>
                   </div>
                   <div className="flex items-end gap-2 mt-1">
                     {showReadCount && (
-                      <p className="text-[10px] font-bold text-primary/60 mb-1">既読 {comment.readCount}</p>
+                      <p className="text-[10px] font-semibold text-primary/60 mb-1">既読 {comment.readCount}</p>
                     )}
                     <div className={cn(
                       "inline-block rounded-2xl px-3.5 py-2 shadow-sm transition-all group-hover:shadow-md",
@@ -209,7 +209,7 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                 </svg>
               </div>
-              <p className="text-sm font-bold tracking-tight">最初のメッセージを投稿しよう！</p>
+              <p className="text-sm font-semibold tracking-tight">最初のメッセージを投稿しよう！</p>
             </div>
           )}
         </div>
@@ -217,7 +217,7 @@ export function ChatSection({ goalId, readOnly = false }: ChatSectionProps) {
 
       <CardFooter className="p-4 pt-4 border-t border-border bg-card/50">
         {readOnly ? (
-          <p className="w-full text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest py-2">
+          <p className="w-full text-center text-xs font-semibold text-muted-foreground py-2">
             この目標は終了しました。チャットは閲覧のみ可能です。
           </p>
         ) : (

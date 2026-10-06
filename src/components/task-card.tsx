@@ -130,14 +130,14 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
           <div className="min-w-0 space-y-1 w-full">
             <div className="flex flex-wrap items-center gap-2">
               <p
-                className={`text-sm font-bold tracking-tight ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}
+                className={`text-sm font-semibold tracking-tight ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}
               >
                 {task.title}
               </p>
-              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                 {getTaskTypeLabel(task.type)}
               </span>
-              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold tabular-nums text-muted-foreground">
+              <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
                 {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
               </span>
             </div>
@@ -159,7 +159,7 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
             )}
 
             {isDone ? (
-              <p className="text-[11px] font-bold text-accent pt-0.5">
+              <p className="text-[11px] font-semibold text-accent pt-0.5">
                 {`完了ポイント: ${formatPoint(task.pointsEarned ?? calculateTaskCompletionPointsFromRange(task.startAt, task.endAt))}pt`}
               </p>
             ) : null}
@@ -173,12 +173,12 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
 
       <DialogContent className="sm:max-w-lg rounded-2xl border-border bg-card p-6 shadow-themed-lg sm:p-8">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-lg font-bold">タスクを編集</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">タスクを編集</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleUpdate} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスク名</Label>
+            <Label className="text-xs font-medium text-muted-foreground">タスク名</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -189,7 +189,7 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
           </div>
           
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細</Label>
+            <Label className="text-xs font-medium text-muted-foreground">詳細</Label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -199,7 +199,7 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ</Label>
+            <Label className="text-xs font-medium text-muted-foreground">タグ</Label>
             <TagPicker
               tags={availableTags}
               selectedIds={selectedTagIds}
@@ -208,8 +208,8 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間</Label>
+          <div className="rounded-xl bg-muted px-4 py-3">
+            <Label className="text-xs font-medium text-muted-foreground">見積時間</Label>
             <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
               {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
             </p>
@@ -240,7 +240,7 @@ export function TaskCard({ task, allTags }: TaskCardProps) {
               <Button 
                 type="submit" 
                 disabled={isLoading}
-                className="h-10 rounded-xl gradient-primary px-6 font-bold text-white shadow-sm transition-all hover:shadow-themed"
+                className="h-10 rounded-xl gradient-primary px-6 font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed"
               >
                 {isLoading ? "保存中..." : "保存"}
               </Button>

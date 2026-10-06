@@ -115,14 +115,14 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="w-full rounded-xl border border-border bg-card px-8 py-3.5 text-sm font-bold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-themed hover:border-primary/20 active:scale-[0.99]"
+          className="w-full rounded-xl border border-border bg-card px-8 py-3.5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-themed active:scale-[0.99]"
         >
           事前申告（遅刻・欠席）
         </button>
 
         {requests.length > 0 && (
           <div className="w-full space-y-2.5">
-            <h4 className="text-xs font-bold tracking-wide text-muted-foreground/70 uppercase">今後の事前申告</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground">今後の事前申告</h4>
             {requests.map((req) => {
               const dateStr = new Date(req.date).toLocaleDateString("ja-JP", {
                 month: "short",
@@ -138,7 +138,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                   <div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${
+                        className={`rounded-lg px-2 py-0.5 text-[11px] font-semibold ${
                           req.type === "ABSENT"
                               ? "bg-destructive/10 text-destructive"
                               : "bg-primary/10 text-primary"
@@ -182,9 +182,9 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
             onClick={closeModal}
             aria-label="モーダルを閉じる"
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
             <div className="mb-6">
-              <h3 className="text-lg font-bold tracking-tight text-foreground">事前申告</h3>
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">事前申告</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 遅刻または欠席の申告は前日の23:59までに行ってください。
               </p>
@@ -192,14 +192,14 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
+                <label className="text-xs font-medium text-muted-foreground">
                   申告タイプ
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setType("LATE")}
-                    className={`rounded-xl border py-2.5 text-sm font-bold transition-all ${
+                    className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${
                       type === "LATE"
                         ? "border-primary/30 bg-primary/10 text-primary shadow-sm"
                         : "border-border bg-background text-muted-foreground hover:bg-secondary"
@@ -210,7 +210,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                   <button
                     type="button"
                     onClick={() => setType("ABSENT")}
-                    className={`rounded-xl border py-2.5 text-sm font-bold transition-all ${
+                    className={`rounded-xl border py-2.5 text-sm font-semibold transition-all ${
                       type === "ABSENT"
                         ? "border-destructive/30 bg-destructive/10 text-destructive shadow-sm"
                         : "border-border bg-background text-muted-foreground hover:bg-secondary"
@@ -223,7 +223,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label htmlFor="notice-date" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
+                  <label htmlFor="notice-date" className="text-xs font-medium text-muted-foreground">
                     対象日
                   </label>
                   <input
@@ -239,7 +239,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
 
                 {type === "LATE" && (
                   <div className="space-y-2">
-                    <label htmlFor="notice-time" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
+                    <label htmlFor="notice-time" className="text-xs font-medium text-muted-foreground">
                       予定到着時刻
                     </label>
                     <input
@@ -255,7 +255,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="notice-reason" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">
+                <label htmlFor="notice-reason" className="text-xs font-medium text-muted-foreground">
                   理由
                 </label>
                 <textarea
@@ -286,7 +286,7 @@ export function AdvanceNoticeButton({ requests }: AdvanceNoticeButtonProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl gradient-primary px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed disabled:opacity-50"
+                  className="rounded-xl gradient-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed disabled:opacity-50"
                 >
                   {isSubmitting ? "送信中..." : "申告する"}
                 </button>

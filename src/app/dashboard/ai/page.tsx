@@ -17,7 +17,7 @@ export default async function AiPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-black tracking-tight text-foreground">AIチャット</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">AIチャット</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Gemini無料枠で、設定画面で再認証済みのGoogleアカウント情報を横断参照します。
         </p>

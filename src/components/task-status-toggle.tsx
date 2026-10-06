@@ -62,7 +62,7 @@ export function TaskStatusToggle({ taskId, status }: TaskStatusToggleProps) {
       type="button"
       disabled={isSubmitting}
       onClick={handleToggle}
-      className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-50 ${
+      className={`group flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-50 ${
         isDone
           ? "border-accent/30 bg-accent/8 text-accent hover:bg-accent/15"
           : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-primary/5 hover:text-primary"

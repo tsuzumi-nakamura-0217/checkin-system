@@ -109,7 +109,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         render={
-          <Button className="h-11 w-full sm:w-auto rounded-xl gradient-primary px-6 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2">
+          <Button className="h-11 w-full sm:w-auto rounded-xl gradient-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2">
             <Plus className="h-4 w-4" />
             新しいタスクを追加
           </Button>
@@ -117,11 +117,11 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
       />
       <DialogContent className="sm:max-w-lg rounded-2xl border-border bg-card p-6 shadow-themed-lg sm:p-8">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-lg font-bold">新しいタスクを追加</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">新しいタスクを追加</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="task-title" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスク名</Label>
+            <Label htmlFor="task-title" className="text-xs font-medium text-muted-foreground">タスク名</Label>
             <Input
               id="task-title"
               value={title}
@@ -134,7 +134,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="task-description" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細（任意）</Label>
+            <Label htmlFor="task-description" className="text-xs font-medium text-muted-foreground">詳細（任意）</Label>
             <textarea
               id="task-description"
               value={description}
@@ -146,7 +146,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ（任意）</Label>
+            <Label className="text-xs font-medium text-muted-foreground">タグ（任意）</Label>
             <TagPicker
               tags={tags}
               selectedIds={selectedTagIds}
@@ -157,7 +157,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="task-start-at" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">開始日時</Label>
+              <Label htmlFor="task-start-at" className="text-xs font-medium text-muted-foreground">開始日時</Label>
               <Input
                 id="task-start-at"
                 type="datetime-local"
@@ -168,7 +168,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="task-end-at" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">終了日時</Label>
+              <Label htmlFor="task-end-at" className="text-xs font-medium text-muted-foreground">終了日時</Label>
               <Input
                 id="task-end-at"
                 type="datetime-local"
@@ -179,8 +179,8 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
-            <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間</p>
+          <div className="rounded-xl bg-muted px-4 py-3">
+            <p className="text-xs font-medium text-muted-foreground">見積時間</p>
             <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
               {estimatedHours == null ? "未設定" : `${estimatedHours}h`}
             </p>
@@ -190,7 +190,7 @@ export function TaskCreateForm({ allTags }: TaskCreateFormProps) {
             <Button 
               type="submit" 
               disabled={isSubmitting} 
-              className="h-11 w-full rounded-xl gradient-primary px-8 text-sm font-bold text-white shadow-sm transition-all hover:shadow-themed sm:w-auto"
+              className="h-11 w-full rounded-xl gradient-primary px-8 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed sm:w-auto"
             >
               {isSubmitting ? "追加中..." : "タスクを追加"}
             </Button>

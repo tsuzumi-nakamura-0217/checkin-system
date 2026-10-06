@@ -182,7 +182,7 @@ export default function CommunityPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter text-foreground">コミュニティ</h1>
+          <h1 className="text-3xl font-semibold tracking-tighter text-foreground">コミュニティ</h1>
           <p className="text-sm font-medium text-muted-foreground mt-1">
             参加メンバーで協力してミッション達成を目指しましょう
           </p>
@@ -198,7 +198,7 @@ export default function CommunityPage() {
                 setSelectedHistoryGoal(null)
               }}
               className={cn(
-                "rounded-lg px-4 font-bold text-xs transition-all",
+                "rounded-lg px-4 font-semibold text-xs transition-all",
                 activeTab === "current" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               )}
             >
@@ -209,7 +209,7 @@ export default function CommunityPage() {
               size="sm" 
               onClick={() => setActiveTab("history")}
               className={cn(
-                "rounded-lg px-4 font-bold text-xs transition-all",
+                "rounded-lg px-4 font-semibold text-xs transition-all",
                 activeTab === "history" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               )}
             >
@@ -223,7 +223,7 @@ export default function CommunityPage() {
               disabled={isParticipationSubmitting}
               onClick={handleParticipation}
               className={cn(
-                "rounded-xl px-4 font-bold text-xs",
+                "rounded-xl px-4 font-semibold text-xs",
                 participation.isJoined ? "border-border" : "gradient-primary shadow-themed-primary"
               )}
             >
@@ -244,11 +244,11 @@ export default function CommunityPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl">
               <DialogHeader>
-                <DialogTitle className="text-xl font-black tracking-tight">新しいミッションを設定</DialogTitle>
+                <DialogTitle className="text-xl font-semibold tracking-tight">新しいミッションを設定</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateGoal} className="space-y-5 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest ml-1">ミッション名</Label>
+                  <Label htmlFor="title" className="text-xs font-semibold text-muted-foreground ml-1">ミッション名</Label>
                   <Input 
                     id="title" 
                     placeholder="例: みんなで打ち上げに行こう！" 
@@ -259,7 +259,7 @@ export default function CommunityPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest ml-1">ミッションタイプ</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground ml-1">ミッションタイプ</Label>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {[
                       { id: "POINTS", label: "ポイント", icon: "✨" },
@@ -278,13 +278,13 @@ export default function CommunityPage() {
                         )}
                       >
                         <span className="text-xl">{t.icon}</span>
-                        <span className="text-[10px] font-bold">{t.label}</span>
+                        <span className="text-[10px] font-semibold">{t.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="points" className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                  <Label htmlFor="points" className="text-xs font-semibold text-muted-foreground ml-1">
                     目標値 ({statusType === "POINTS" ? "pts" : "日"})
                   </Label>
                   <Input 
@@ -298,7 +298,7 @@ export default function CommunityPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="deadline" className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest ml-1">期限</Label>
+                  <Label htmlFor="deadline" className="text-xs font-semibold text-muted-foreground ml-1">期限</Label>
                   <Input 
                     id="deadline" 
                     type="date" 
@@ -309,7 +309,7 @@ export default function CommunityPage() {
                   />
                 </div>
                 <DialogFooter className="pt-2">
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl gradient-primary font-bold shadow-themed-primary transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl gradient-primary font-semibold shadow-themed-primary transition-all hover:scale-[1.02] active:scale-[0.98]">
                     {isSubmitting ? "設定中..." : "ミッションを公開する"}
                   </Button>
                 </DialogFooter>
@@ -342,7 +342,7 @@ export default function CommunityPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold tracking-tight">アクティブなミッションがありません</h3>
+              <h3 className="text-xl font-semibold tracking-tight">アクティブなミッションがありません</h3>
               <p className="mt-2 text-sm text-muted-foreground max-w-[300px]">
                 「ミッションを設定する」ボタンから最初のプロジェクトを始めましょう。
               </p>
@@ -367,7 +367,7 @@ export default function CommunityPage() {
                 >
                   ← 履歴一覧へ戻る
                 </Button>
-                <h2 className="text-xl font-black">{selectedHistoryGoal.title}</h2>
+                <h2 className="text-xl font-semibold">{selectedHistoryGoal.title}</h2>
               </div>
               
               <GoalProgress 
@@ -399,19 +399,19 @@ export default function CommunityPage() {
                   <div 
                     key={h.id} 
                     onClick={() => setSelectedHistoryGoal(h)}
-                    className="group relative cursor-pointer overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/20"
+                    className="group relative cursor-pointer overflow-hidden rounded-3xl border border-black/[0.04] bg-card p-6 shadow-themed transition-all hover:shadow-themed-lg"
                   >
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {new Date(h.completedAt).toLocaleDateString()}
                       </span>
                       <div className="h-2 w-2 rounded-full bg-muted-foreground/30 group-hover:bg-primary transition-colors" />
                     </div>
-                    <h3 className="text-lg font-black tracking-tight text-foreground line-clamp-1 mb-1">{h.title}</h3>
-                    <p className="text-xs font-bold text-muted-foreground mb-4">
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground line-clamp-1 mb-1">{h.title}</h3>
+                    <p className="text-xs font-semibold text-muted-foreground mb-4">
                       {h.targetPoints.toLocaleString()} pts ミッション
                     </p>
-                    <div className="text-[10px] font-bold text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       詳細を見る →
                     </div>
                   </div>

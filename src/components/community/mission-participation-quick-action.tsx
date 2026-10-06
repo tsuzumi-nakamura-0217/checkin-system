@@ -65,7 +65,7 @@ export function MissionParticipationQuickAction({ embedded = false }: MissionPar
   }
 
   return (
-    <section className={cn(!embedded && "rounded-2xl border border-border bg-card px-4 py-3 shadow-sm")}>
+    <section className={cn(!embedded && "rounded-2xl border border-black/[0.04] bg-card px-4 py-3 shadow-themed")}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs font-medium text-muted-foreground">
           ミッションへの参加状態をここから切り替えできます。
@@ -76,7 +76,7 @@ export function MissionParticipationQuickAction({ embedded = false }: MissionPar
           onClick={handleToggle}
           disabled={isSubmitting}
           className={cn(
-            "min-w-36 rounded-xl font-bold",
+            "min-w-36 rounded-xl font-semibold",
             !state.isJoined && "gradient-primary shadow-themed-primary"
           )}
         >

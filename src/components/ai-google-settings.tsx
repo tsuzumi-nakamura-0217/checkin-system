@@ -194,10 +194,10 @@ export function AiGoogleSettings() {
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-border bg-background/60 p-4">
+      <div className="rounded-xl bg-muted p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">Gemini 利用状況</p>
+            <p className="text-xs font-medium text-muted-foreground">Gemini 利用状況</p>
             <p className="mt-1 text-sm font-medium text-foreground">
               本日 {data.usage.requestCount} / {data.usage.limit} 回
             </p>
@@ -212,7 +212,7 @@ export function AiGoogleSettings() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-background/60">
+      <div className="overflow-hidden rounded-xl bg-muted">
         {data.accounts.length === 0 ? (
           <div className="px-4 py-6 text-sm text-muted-foreground">連携済みアカウントはまだありません。</div>
         ) : (

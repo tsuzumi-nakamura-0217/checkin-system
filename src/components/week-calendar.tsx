@@ -453,7 +453,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
   if (!hasMounted) {
     return (
       <div className="space-y-5 tracking-tight">
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-themed">
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed">
           <div className="flex items-center gap-3">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <p className="text-sm font-medium text-muted-foreground">カレンダーを読み込み中です...</p>
@@ -474,7 +474,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
       </div>
       {showTimeSettings && (
         <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 shadow-sm animate-slide-up">
-          <label className="text-xs font-bold text-muted-foreground">表示範囲:</label>
+          <label className="text-xs font-semibold text-muted-foreground">表示範囲:</label>
           <select value={startHour} onChange={(e) => { const v = parseInt(e.target.value, 10); if (v < endHour) setStartHour(v) }} className="rounded-lg border border-border bg-background px-2 py-1 text-xs font-medium">
             {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{String(i).padStart(2, "0")}:00</option>)}
           </select>
@@ -485,11 +485,11 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card shadow-themed">
+      <div className="overflow-x-auto rounded-2xl border border-black/[0.04] bg-card shadow-themed">
         <div className="min-w-215 overflow-hidden">
           {/* Header */}
           <div className="grid grid-cols-[64px_repeat(7,minmax(110px,1fr))] border-b border-border bg-secondary/50">
-            <div className="border-r border-border px-2 py-3 text-center text-[10px] font-bold tracking-[0.15em] text-muted-foreground/60 uppercase">時刻</div>
+            <div className="border-r border-border px-2 py-3 text-center text-xs font-medium text-muted-foreground">時刻</div>
             {weekDays.map((day, index) => {
               const checkIn = day.checkIn
               const checkInTime = checkIn ? formatTimeLabel(new Date(checkIn.time)) : "—"
@@ -499,17 +499,17 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
               return (
                 <div key={day.key} className={`border-r border-border px-3 py-3 last:border-r-0 ${isToday ? "bg-primary/5" : ""}`}>
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold tabular-nums ${isToday ? "text-primary" : "text-foreground"}`}>
+                    <span className={`text-sm font-semibold tabular-nums ${isToday ? "text-primary" : "text-foreground"}`}>
                       {new Intl.DateTimeFormat("ja-JP", { day: "2-digit" }).format(day.date)}
                     </span>
                     <span className={`text-[11px] font-semibold ${isToday ? "text-primary/70" : "text-muted-foreground"}`}>
                       {DAY_LABELS[index]}
                     </span>
-                    {isToday && <span className="rounded-md bg-primary px-1.5 py-0.5 text-[9px] font-bold text-white">TODAY</span>}
+                    {isToday && <span className="rounded-md bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">TODAY</span>}
                   </div>
                   <p className="mt-1 text-[10px] font-medium text-muted-foreground tabular-nums">出 {checkInTime} / 退 {checkOutTime}</p>
                   {checkIn ? (
-                    <span className={`mt-1 inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-bold ${getCheckInStatusColor(checkIn.status)}`}>
+                    <span className={`mt-1 inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${getCheckInStatusColor(checkIn.status)}`}>
                       {getCheckInStatusLabel(checkIn.status)} ({checkIn.pointsEarned >= 0 ? `+${checkIn.pointsEarned}` : checkIn.pointsEarned}pt)
                     </span>
                   ) : null}
@@ -652,7 +652,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                                       <span
                                         key={tag.id}
                                         title={tag.name}
-                                        className={`inline-flex max-w-[72px] items-center rounded border px-1 text-[9px] font-bold leading-[1.4] ${getTagColorPreset(tag.color).badge}`}
+                                        className={`inline-flex max-w-[72px] items-center rounded border px-1 text-[9px] font-semibold leading-[1.4] ${getTagColorPreset(tag.color).badge}`}
                                       >
                                         <span className="truncate">{tag.name}</span>
                                       </span>
@@ -669,7 +669,7 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                                       <span
                                         key={tag.id}
                                         title={tag.name}
-                                        className={`inline-flex max-w-full items-center rounded border px-1 text-[9px] font-bold leading-[1.5] ${getTagColorPreset(tag.color).badge}`}
+                                        className={`inline-flex max-w-full items-center rounded border px-1 text-[9px] font-semibold leading-[1.5] ${getTagColorPreset(tag.color).badge}`}
                                       >
                                         <span className="truncate">{tag.name}</span>
                                       </span>
@@ -689,17 +689,17 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
                   {/* Selection overlay */}
                   {daySelection ? (
                     <div className="pointer-events-none absolute left-1 right-1 z-20 rounded-lg border-2 border-primary/60 bg-primary/10 shadow-lg" style={{ top: daySelection.top, height: daySelection.height }}>
-                      {daySelectionInfo ? (<div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold text-white whitespace-nowrap shadow-sm">{daySelectionInfo.rangeLabel} ({daySelectionInfo.durationLabel})</div>) : null}
+                      {daySelectionInfo ? (<div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground whitespace-nowrap shadow-sm">{daySelectionInfo.rangeLabel} ({daySelectionInfo.durationLabel})</div>) : null}
                     </div>
                   ) : null}
                   {taskSelectionDay ? (
                     <div className="pointer-events-none absolute left-1 right-1 z-30 rounded-lg border-2 border-primary/60 bg-primary/10 shadow-lg flex items-center justify-center" style={{ top: taskSelectionDay.top, height: taskSelectionDay.height }}>
-                      <p className="rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold text-white whitespace-nowrap shadow-sm">{toDurationLabel(buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0, startHour), new Date(buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0, startHour).getTime() + (taskDragContext?.durationSlots || 0) * SLOT_MINUTES * 60 * 1000))}</p>
+                      <p className="rounded-md bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground whitespace-nowrap shadow-sm">{toDurationLabel(buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0, startHour), new Date(buildDateFromSlot(weekStart, taskDragCurrent?.dayIndex || 0, taskDragCurrent?.slotIndex || 0, startHour).getTime() + (taskDragContext?.durationSlots || 0) * SLOT_MINUTES * 60 * 1000))}</p>
                     </div>
                   ) : null}
                   {taskResizeSelectionDay ? (
                     <div className="pointer-events-none absolute left-1 right-1 z-30 rounded-lg border-2 border-primary/60 bg-primary/10 shadow-lg" style={{ top: taskResizeSelectionDay.top, height: taskResizeSelectionDay.height }}>
-                      {taskResizeSelectionInfo ? (<div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold text-white whitespace-nowrap shadow-sm">{taskResizeSelectionInfo.rangeLabel} ({taskResizeSelectionInfo.durationLabel})</div>) : null}
+                      {taskResizeSelectionInfo ? (<div className="absolute left-1/2 top-1 -translate-x-1/2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground whitespace-nowrap shadow-sm">{taskResizeSelectionInfo.rangeLabel} ({taskResizeSelectionInfo.durationLabel})</div>) : null}
                     </div>
                   ) : null}
 
@@ -720,22 +720,22 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
       {selectedRange || editingTask ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <button type="button" className="absolute inset-0 bg-black/30" onClick={closeModal} aria-label="close-modal-bg" />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed-lg animate-scale-in sm:p-8">
             <div className="mb-5">
-              <p className="text-lg font-bold tracking-tight text-foreground">{editingTask ? "タスクを編集" : "タスクを作成"}</p>
+              <p className="text-lg font-semibold tracking-tight text-foreground">{editingTask ? "タスクを編集" : "タスクを作成"}</p>
               {selectedRange ? (<p className="mt-1 text-sm font-medium text-muted-foreground">{new Intl.DateTimeFormat("ja-JP", { month: "2-digit", day: "2-digit", weekday: "short" }).format(selectedRange.startAt)} {toDurationLabel(selectedRange.startAt, selectedRange.endAt)}</p>) : null}
             </div>
             <form onSubmit={editingTask ? handleScheduledUpdate : handleScheduledCreate} className="space-y-4">
               <div className="space-y-1.5">
-                <label htmlFor="calendar-task-title" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タスク名</label>
+                <label htmlFor="calendar-task-title" className="text-xs font-medium text-muted-foreground">タスク名</label>
                 <input id="calendar-task-title" value={title} onChange={(e) => setTitle(e.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-4 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" maxLength={120} required autoFocus />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="calendar-task-description" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">詳細（任意）</label>
+                <label htmlFor="calendar-task-description" className="text-xs font-medium text-muted-foreground">詳細（任意）</label>
                 <textarea id="calendar-task-description" value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-20 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium shadow-none outline-none transition-all placeholder:text-muted-foreground/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/20" maxLength={300} />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">タグ（任意）</label>
+                <label className="text-xs font-medium text-muted-foreground">タグ（任意）</label>
                 <TagPicker
                   tags={availableTags}
                   selectedIds={selectedTagIds}
@@ -746,28 +746,28 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
               {editingTask ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label htmlFor="calendar-task-start" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">開始時刻</label>
+                    <label htmlFor="calendar-task-start" className="text-xs font-medium text-muted-foreground">開始時刻</label>
                     <input id="calendar-task-start" type="datetime-local" value={startAtInput} onChange={(e) => setStartAtInput(e.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" />
                   </div>
                   <div className="space-y-1.5">
-                    <label htmlFor="calendar-task-end" className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">終了時刻</label>
+                    <label htmlFor="calendar-task-end" className="text-xs font-medium text-muted-foreground">終了時刻</label>
                     <input id="calendar-task-end" type="datetime-local" value={endAtInput} onChange={(e) => setEndAtInput(e.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-medium shadow-none outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20" />
                   </div>
                 </div>
               ) : null}
               <div className={editingTask ? "grid gap-4 sm:grid-cols-2" : "space-y-1.5"}>
-                <div className="rounded-xl border border-border bg-background/70 px-4 py-3">
-                  <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">見積時間（自動）</label>
+                <div className="rounded-xl bg-muted px-4 py-3">
+                  <label className="text-xs font-medium text-muted-foreground">見積時間（自動）</label>
                   <p className="mt-1 text-sm font-semibold text-foreground tabular-nums">
                     {modalEstimatedHours == null ? "未設定" : `${modalEstimatedHours}h`}
                   </p>
                 </div>
                 {editingTask ? (
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">ステータス</label>
+                    <label className="text-xs font-medium text-muted-foreground">ステータス</label>
                     <div className="grid grid-cols-2 gap-1.5">
-                      <button type="button" onClick={() => setStatus("TODO")} className={`rounded-lg py-2 text-xs font-bold transition-all ${status === "TODO" ? "bg-primary/10 text-primary border border-primary/30 shadow-sm" : "bg-background text-muted-foreground border border-border hover:bg-secondary"}`}>未完了</button>
-                      <button type="button" onClick={() => setStatus("DONE")} className={`rounded-lg py-2 text-xs font-bold transition-all ${status === "DONE" ? "bg-accent/10 text-accent border border-accent/30 shadow-sm" : "bg-background text-muted-foreground border border-border hover:bg-secondary"}`}>完了</button>
+                      <button type="button" onClick={() => setStatus("TODO")} className={`rounded-lg py-2 text-xs font-semibold transition-all ${status === "TODO" ? "bg-primary/10 text-primary border border-primary/30 shadow-sm" : "bg-background text-muted-foreground border border-border hover:bg-secondary"}`}>未完了</button>
+                      <button type="button" onClick={() => setStatus("DONE")} className={`rounded-lg py-2 text-xs font-semibold transition-all ${status === "DONE" ? "bg-accent/10 text-accent border border-accent/30 shadow-sm" : "bg-background text-muted-foreground border border-border hover:bg-secondary"}`}>完了</button>
                     </div>
                   </div>
                 ) : null}
@@ -775,13 +775,13 @@ export function WeekCalendar({ weekStartIso, tasks, checkIns, allTags }: WeekCal
               {message ? (<p className={`text-xs font-medium ${isError ? "text-destructive" : "text-accent"}`}>{message}</p>) : null}
               <div className="flex items-center justify-end gap-2 pt-2">
                 {editingTask ? (
-                  <button type="button" onClick={handleTaskDelete} disabled={isDeleting || isSubmitting} className="mr-auto flex items-center gap-1.5 rounded-xl bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive transition-all hover:bg-destructive/20 disabled:opacity-50">
+                  <button type="button" onClick={handleTaskDelete} disabled={isDeleting || isSubmitting} className="mr-auto flex items-center gap-1.5 rounded-xl bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive transition-all hover:bg-destructive/20 disabled:opacity-50">
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     {isDeleting ? "削除中..." : "削除"}
                   </button>
                 ) : null}
                 <button type="button" onClick={closeModal} className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary">キャンセル</button>
-                <button type="submit" disabled={isSubmitting || isDeleting} className="rounded-xl gradient-primary px-5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:shadow-themed disabled:opacity-50">{isSubmitting ? (editingTask ? "保存中..." : "作成中...") : editingTask ? "保存" : "作成"}</button>
+                <button type="submit" disabled={isSubmitting || isDeleting} className="rounded-xl gradient-primary px-5 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed disabled:opacity-50">{isSubmitting ? (editingTask ? "保存中..." : "作成中...") : editingTask ? "保存" : "作成"}</button>
               </div>
             </form>
           </div>

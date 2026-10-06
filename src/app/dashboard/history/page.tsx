@@ -34,7 +34,7 @@ export default async function DashboardHistoryPage() {
   return (
     <section className="space-y-5 animate-fade-in">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white shadow-sm">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-sm">
           <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -43,39 +43,39 @@ export default async function DashboardHistoryPage() {
       </div>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">合計</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.total}</p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-muted-foreground">合計</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.total}</p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">チェックイン回数</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">獲得pt</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.totalPoints.toLocaleString("ja-JP")}</p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-muted-foreground">獲得pt</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.totalPoints.toLocaleString("ja-JP")}</p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">累計ポイント</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">時間内率</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.onTimeRate}<span className="ml-0.5 text-sm font-semibold text-muted-foreground">%</span></p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-muted-foreground">時間内率</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.onTimeRate}<span className="ml-0.5 text-sm font-semibold text-muted-foreground">%</span></p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">早着+時間内（在宅除く）</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-accent uppercase">早着</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.earlyCount}</p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-accent">早着</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.earlyCount}</p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">回</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-primary uppercase">時間内</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.onTimeCount}</p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-primary">時間内</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.onTimeCount}</p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">回</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-themed">
-          <p className="text-[10px] font-bold tracking-[0.15em] text-destructive uppercase">遅刻</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">{stats.lateCount}</p>
+        <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed">
+          <p className="text-xs font-medium text-destructive">遅刻</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{stats.lateCount}</p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">回 / 在宅 {stats.remoteCount}回</p>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-card shadow-themed overflow-hidden">
+      <section className="rounded-2xl border border-black/[0.04] bg-card shadow-themed overflow-hidden">
         {data.recentCheckIns.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-4">
@@ -91,11 +91,11 @@ export default async function DashboardHistoryPage() {
             <table className="min-w-full text-sm">
               <thead className="sticky top-0 z-10 bg-secondary">
                 <tr className="border-b border-border text-left">
-                  <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">日時</th>
-                  <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">ステータス</th>
-                  <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">ポイント</th>
-                  <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">目標時刻</th>
-                  <th className="px-4 py-3 text-[10px] font-bold tracking-[0.15em] text-muted-foreground/70 uppercase">退勤</th>
+                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">日時</th>
+                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">ステータス</th>
+                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">ポイント</th>
+                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">目標時刻</th>
+                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">退勤</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,11 +112,11 @@ export default async function DashboardHistoryPage() {
                       }).format(item.time)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-bold ${getStatusBadgeClass(item.status)}`}>
+                      <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${getStatusBadgeClass(item.status)}`}>
                         {getCheckInStatusLabel(item.status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-bold tabular-nums">{formatPoint(item.pointsEarned)} pt</td>
+                    <td className="px-4 py-3 font-semibold tabular-nums">{formatPoint(item.pointsEarned)} pt</td>
                     <td className="px-4 py-3 text-muted-foreground tabular-nums">{item.targetTime}</td>
                     <td className="px-4 py-3 tabular-nums">{item.checkOutTime ? formatTimeLabel(item.checkOutTime) : <span className="text-muted-foreground/40">—</span>}</td>
                   </tr>

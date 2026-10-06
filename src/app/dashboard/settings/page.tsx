@@ -1,6 +1,7 @@
 import { SettingsForm } from "@/components/settings-form"
 import { AiGoogleSettings } from "@/components/ai-google-settings"
 import { AvatarUpload } from "@/components/avatar-upload"
+import { AccentColorPicker } from "@/components/accent-color-picker"
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/current-user"
 
@@ -17,11 +18,15 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed sm:p-8">
         <AvatarUpload
           currentImage={currentUser.customImage}
           googleImage={currentUser.image}
         />
+      </div>
+
+      <div className="rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed sm:p-8">
+        <AccentColorPicker />
       </div>
 
       <div className="flex items-center gap-4">
@@ -39,11 +44,11 @@ export default async function SettingsPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed sm:p-8">
         <SettingsForm />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl border border-black/[0.04] bg-card p-6 shadow-themed sm:p-8">
         <AiGoogleSettings />
       </div>
     </div>

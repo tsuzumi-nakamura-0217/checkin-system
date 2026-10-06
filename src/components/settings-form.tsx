@@ -97,7 +97,7 @@ export function SettingsForm() {
     <form onSubmit={handleSubmit} className="space-y-8">
       {message && (
         <div
-          className={`flex items-center gap-3 rounded-2xl p-4 text-sm font-bold shadow-sm ${
+          className={`flex items-center gap-3 rounded-2xl p-4 text-sm font-semibold shadow-sm ${
             message.type === "success"
               ? "bg-primary text-primary-foreground"
               : "bg-destructive text-white"

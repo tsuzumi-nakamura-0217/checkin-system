@@ -107,10 +107,10 @@ export function CheckOutButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className={`w-full rounded-full border px-8 py-3.5 text-sm font-bold transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none ${
+        className={`w-full rounded-full border px-8 py-3.5 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none ${
           alreadyCheckedOut
             ? "border-accent/20 bg-accent/8 text-accent"
-            : "border-border bg-card text-foreground shadow-sm hover:shadow-themed hover:border-primary/20 active:scale-[0.95]"
+            : "border-border bg-card text-foreground shadow-sm hover:shadow-themed active:scale-[0.95]"
         }`}
       >
         {!hasTodayCheckIn
@@ -142,7 +142,7 @@ export function CheckOutButton({
                   setMessage(message.replace("。", "。 ") + "コピーに失敗しました。")
                 }
               }}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition-all hover:bg-primary/20 animate-fade-in"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition-all hover:bg-primary/20 animate-fade-in"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />

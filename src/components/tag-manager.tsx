@@ -21,7 +21,7 @@ type TagManagerProps = {
 }
 
 const DEFAULT_TRIGGER_CLASS =
-  "h-11 w-full sm:w-auto rounded-xl border-border px-5 text-sm font-bold shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2"
+  "h-11 w-full sm:w-auto rounded-xl border-border px-5 text-sm font-semibold shadow-sm transition-all hover:shadow-themed flex items-center justify-center gap-2"
 
 type TagMutationResponse =
   | { success: true; tag: TagItem }
@@ -182,13 +182,13 @@ export function TagManager({ tags, triggerClassName }: TagManagerProps) {
       />
       <DialogContent className="sm:max-w-lg rounded-2xl border-border bg-card p-6 shadow-themed-lg sm:p-8">
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-lg font-bold">タグを管理</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">タグを管理</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* 新規追加 */}
-          <div className="space-y-2 rounded-xl border border-border bg-background/70 p-3">
-            <p className="text-[10px] font-bold tracking-[0.18em] text-muted-foreground/70 uppercase">新しいタグ</p>
+          <div className="space-y-2 rounded-xl bg-muted p-3">
+            <p className="text-xs font-medium text-muted-foreground">新しいタグ</p>
             <input
               value={newName}
               onChange={(event) => setNewName(event.target.value)}
@@ -201,7 +201,7 @@ export function TagManager({ tags, triggerClassName }: TagManagerProps) {
               type="button"
               onClick={handleCreate}
               disabled={isAdding}
-              className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-bold text-white shadow-sm transition-all hover:shadow-themed disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed disabled:opacity-60"
             >
               <Plus className="size-3.5" />
               {isAdding ? "追加中..." : "追加"}
@@ -237,7 +237,7 @@ export function TagManager({ tags, triggerClassName }: TagManagerProps) {
                             type="button"
                             onClick={() => handleSave(tag.id)}
                             disabled={isSaving}
-                            className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-bold text-white shadow-sm disabled:opacity-60"
+                            className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
                           >
                             <Check className="size-3.5" />
                             保存

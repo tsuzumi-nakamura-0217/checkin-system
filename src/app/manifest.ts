@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: '研究室の出欠とタスク管理を行うダッシュボード',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f2f0eb',
-    theme_color: '#1E3932', /* House Green */
+    background_color: '#f5f5f7',
+    theme_color: '#f5f5f7',
     icons: [
       {
         src: '/icon.svg',

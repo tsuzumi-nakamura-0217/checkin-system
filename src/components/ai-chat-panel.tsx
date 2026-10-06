@@ -293,18 +293,18 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
         "flex min-h-0 flex-1 flex-col overflow-hidden",
         isSidebar
           ? "rounded-none"
-          : "min-h-[68vh] rounded-3xl border border-border/80 bg-card/95 shadow-themed"
+          : "min-h-[68vh] rounded-3xl border border-black/[0.04] bg-card shadow-themed"
       )}
     >
       <header className="relative overflow-hidden border-b border-border/80 px-4 py-4 sm:px-5">
         <div className="absolute inset-0 bg-primary/8" />
         <div className="relative flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em] text-primary/80 uppercase">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-primary/80">
               <Sparkles className="h-3 w-3" />
               Gemini style
             </p>
-            <h2 className="mt-1 truncate text-base font-bold text-foreground sm:text-lg">{activeSessionTitle}</h2>
+            <h2 className="mt-1 truncate text-base font-semibold text-foreground sm:text-lg">{activeSessionTitle}</h2>
             <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">
               Google系サービスの参照対象は、設定画面で再認証済みのアカウントのみです。
             </p>
@@ -339,7 +339,7 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
         )}
       >
         {!activeSessionId ? (
-          <div className="rounded-2xl border border-dashed border-border bg-background/80 p-5 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
             上の「新規」から会話を開始してください。
           </div>
         ) : loadingMessages ? (
@@ -355,15 +355,15 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
               <article
                 key={item.id}
                 className={cn(
-                  "max-w-[90%] rounded-3xl px-4 py-3 text-sm leading-relaxed shadow-sm",
+                  "max-w-[85%] rounded-[20px] px-4 py-2.5 text-[15px] leading-relaxed",
                   isUser
-                    ? "ml-auto gradient-primary text-primary-foreground"
-                    : "mr-auto border border-border/90 bg-background/90 text-foreground"
+                    ? "ml-auto bg-primary text-primary-foreground"
+                    : "mr-auto bg-[#e9e9eb] text-foreground"
                 )}
               >
                 <p
                   className={cn(
-                    "mb-1 text-[10px] font-bold tracking-[0.16em] uppercase",
+                    "mb-1 text-xs font-medium",
                     isUser ? "text-primary-foreground/80" : "text-primary/75"
                   )}
                 >
@@ -397,14 +397,14 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
             )
           })
         ) : (
-          <div className="rounded-2xl border border-dashed border-border bg-background/80 p-5 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
             最初の質問を送信すると、会話がここに表示されます。
           </div>
         )}
       </div>
 
       <form onSubmit={handleSend} className="border-t border-border/80 bg-card/70 px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2 rounded-2xl border border-border/90 bg-background/85 p-2">
+        <div className="flex items-center gap-2 rounded-2xl bg-muted p-2">
           <Input
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -481,7 +481,7 @@ export function AiChatPanel({ mode = "page", className, onClose }: AiChatPanelPr
       {statusCards}
 
       <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="rounded-3xl border border-border/80 bg-card/95 p-4 shadow-themed">
+        <aside className="rounded-3xl border border-black/[0.04] bg-card p-4 shadow-themed">
           <div className="mb-3 flex items-center justify-between">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
               <Bot className="h-4 w-4 text-primary" />

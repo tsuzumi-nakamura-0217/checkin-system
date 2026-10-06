@@ -82,7 +82,7 @@ export function DashboardNavDesktop({ navLinks }: DashboardNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="space-y-1 text-sm font-medium">
+    <nav className="space-y-0.5 text-[14px] font-medium">
       {navLinks.map((item) => {
         const isActive = isActivePath(pathname, item.href)
 
@@ -91,17 +91,14 @@ export function DashboardNavDesktop({ navLinks }: DashboardNavProps) {
             key={item.href}
             href={item.href}
             className={cn(
-              "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200",
+              "group relative flex items-center gap-3 rounded-[10px] px-3 py-2 transition-colors duration-150",
               isActive
-                ? "bg-primary/8 text-primary font-semibold"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                ? "bg-black/[0.06] text-foreground"
+                : "text-foreground/80 hover:bg-black/[0.04] hover:text-foreground",
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            {isActive ? (
-              <span className="absolute left-0 top-1/2 h-6 w-0.75 -translate-y-1/2 rounded-r-full gradient-primary" />
-            ) : null}
-            <NavIcon icon={item.icon} className={isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"} />
+            <NavIcon icon={item.icon} className={isActive ? "text-primary" : "text-muted-foreground"} />
             {item.label}
           </Link>
         )
@@ -117,7 +114,7 @@ export function DashboardNavMobile({ navLinks }: DashboardNavProps) {
   const mobileLinks = navLinks.filter(item => item.icon !== "settings")
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card shadow-[var(--shadow-nav)] lg:hidden">
+    <nav className="glass-nav fixed bottom-0 left-0 right-0 z-50 border-t pb-[env(safe-area-inset-bottom)] lg:hidden">
       <div className="mx-auto flex max-w-lg items-stretch justify-around">
         {mobileLinks.map((item) => {
           const isActive = isActivePath(pathname, item.href)
@@ -127,17 +124,14 @@ export function DashboardNavMobile({ navLinks }: DashboardNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-semibold tracking-wide transition-colors",
+                "relative flex flex-1 flex-col items-center gap-1 pt-2 pb-1.5 text-[10px] font-medium transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground active:text-foreground",
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              {isActive ? (
-                <span className="absolute top-0 left-1/2 h-[2.5px] w-8 -translate-x-1/2 rounded-b-full gradient-primary" />
-              ) : null}
-              <NavIcon icon={item.icon} className={isActive ? "text-primary" : ""} />
+              <NavIcon icon={item.icon} className={cn("h-6 w-6", isActive ? "text-primary" : "")} />
               {item.label}
             </Link>
           )

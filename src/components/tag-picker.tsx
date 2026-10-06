@@ -81,7 +81,7 @@ export function TagPicker({ tags, selectedIds, onSelectedChange, onTagCreated }:
               key={tag.id}
               type="button"
               onClick={() => toggle(tag.id)}
-              className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-bold transition-all ${
+              className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-all ${
                 isSelected
                   ? preset.badge
                   : "border-border bg-background text-muted-foreground hover:bg-secondary"
@@ -99,7 +99,7 @@ export function TagPicker({ tags, selectedIds, onSelectedChange, onTagCreated }:
       </div>
 
       {isCreating ? (
-        <div className="space-y-2 rounded-xl border border-border bg-background/70 p-3">
+        <div className="space-y-2 rounded-xl bg-muted p-3">
           <input
             value={newName}
             onChange={(event) => setNewName(event.target.value)}
@@ -126,7 +126,7 @@ export function TagPicker({ tags, selectedIds, onSelectedChange, onTagCreated }:
               type="button"
               onClick={handleCreate}
               disabled={isSubmitting}
-              className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-bold text-white shadow-sm transition-all hover:shadow-themed disabled:opacity-60"
+              className="inline-flex h-8 items-center gap-1 rounded-lg gradient-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-themed disabled:opacity-60"
             >
               <Plus className="size-3.5" />
               {isSubmitting ? "追加中..." : "追加"}
@@ -149,7 +149,7 @@ export function TagPicker({ tags, selectedIds, onSelectedChange, onTagCreated }:
         <button
           type="button"
           onClick={() => setIsCreating(true)}
-          className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-[11px] font-bold text-muted-foreground transition-all hover:bg-secondary"
+          className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-[11px] font-semibold text-muted-foreground transition-all hover:bg-secondary"
         >
           <Plus className="size-3" />
           新規タグ

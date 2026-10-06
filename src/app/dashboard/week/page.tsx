@@ -28,10 +28,10 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
 
   return (
     <section className="space-y-4 animate-fade-in">
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-themed sm:p-5">
+      <div className="rounded-2xl border border-black/[0.04] bg-card p-4 shadow-themed sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-sm">
               <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -54,7 +54,7 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <span className="px-3 py-1 text-xs font-bold text-foreground tabular-nums">{data.weekRangeLabel}</span>
+              <span className="px-3 py-1 text-xs font-semibold text-foreground tabular-nums">{data.weekRangeLabel}</span>
               <Link
                 href={`/dashboard/week?week=${toDayKey(data.nextWeek)}`}
                 className="rounded-lg px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -67,7 +67,7 @@ export default async function DashboardWeekPage({ searchParams }: DashboardWeekP
             </div>
             <TagManager
               tags={data.allTags}
-              triggerClassName="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground shadow-sm transition-all hover:bg-secondary"
+              triggerClassName="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-all hover:bg-secondary"
             />
             <TodayTaskReportButton todayTasks={data.todayTasks} checkedInTimeLabel={data.checkedInTimeLabel} isRemote={data.isRemoteCheckIn} />
           </div>

@@ -25,14 +25,14 @@ export default async function DashboardTasksPage() {
     <section className="space-y-5 tracking-tight animate-fade-in">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-white shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary text-primary-foreground shadow-sm">
             <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
           </div>
           <h2>タスク</h2>
         </div>
-        <span className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-bold tabular-nums text-muted-foreground shadow-sm">
+        <span className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold tabular-nums text-muted-foreground shadow-sm">
           <span className="text-primary">{doneCount}</span> / {data.tasks.length} 完了
         </span>
       </div>
@@ -42,7 +42,7 @@ export default async function DashboardTasksPage() {
         <TagManager tags={data.allTags} />
       </div>
 
-      <section className="rounded-2xl border border-border bg-card p-5 shadow-themed sm:p-7">
+      <section className="rounded-2xl border border-black/[0.04] bg-card p-5 shadow-themed sm:p-7">
         {data.tasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8 text-primary mb-4">
